@@ -1,7 +1,9 @@
 """Hardware configuration.
 
-Constants prefixed with DEFAULT_ will be overridden by database values, if they
-exist.
+HydroPi Web:
+
+Constants prefixed with `DEFAULT_` will be overridden by database values, if
+they exist.
 """
 
 # Pins
@@ -10,12 +12,16 @@ exist.
 # Inputs
 PIN_PH = 1
 PIN_EC = 2
-PIN_DEPTH = 3
-PIN_PRESSURE = 4
+PIN_DEPTH_TRIG = 3
+PIN_DEPTH_ECHO = 4
+PIN_PRESSURE = 5
 
 # Outputs
-PIN_PUMP = 5
-PIN_FLOW = 6
+PIN_PRESSURE_PUMP = 6
+PIN_FLOW = 7
+PIN_EC_PUMP = 8
+PIN_PH_DOWN_PUMP = 9
+PIN_FLOW_WATER = 10
 
 # Parameters
 #-------------------------------------------------------------------------------
@@ -43,7 +49,7 @@ EC_LIMIT_WARN = 0.4
 EC_LIMIT_DANGER = 1
 EC_ACTION_TOLERANCE = 0.2
 
-# Water monitoring
+# Water level monitoring
 DEPTH_UNIT_HUMAN = 'mm'
 DEPTH_UNIT_MACHINE = 'psi'
 DEPTH_MACHINE_TO_HUMAN = None
