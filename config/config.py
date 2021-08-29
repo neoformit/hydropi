@@ -41,8 +41,10 @@ DEFAULTS = {
     # Parameters
     #-------------------------------------------------------------------------------
 
-    # Minutes between status checks
-    'SWEEP_CYCLE_MINUTES': 5,
+    # Cycle durations
+    'SWEEP_CYCLE_MINUTES': 15,
+    'MIST_CYCLE_MINUTES': 5,
+    'MIST_DURATION_SECONDS': 15,
 
     # Pressure monitoring
     'MIN_PRESSURE': None,
