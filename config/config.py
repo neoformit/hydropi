@@ -1,27 +1,30 @@
 """Hardware configuration.
 
-HydroPi Web:
+These are default values that may be overwritten at runtime.
 
-Constants prefixed with `DEFAULT_` will be overridden by database values, if
-they exist.
+- Digital io passes through pins (gpio header pins)
+- Analogue io passes through channels (MCP3008 chip interface)
+
+Perhaps makes sense for config to be written to Redis at runtime to allow hydro
+web to control config in real time.
 """
 
 # Pins
 #-------------------------------------------------------------------------------
 
 # Inputs
-PIN_PH = 1
-PIN_EC = 2
-PIN_DEPTH_TRIG = 3
-PIN_DEPTH_ECHO = 4
-PIN_PRESSURE = 5
+CHANNEL_PH = 1
+CHANNEL_EC = 2
+CHANNEL_PRESSURE = 3
+PIN_DEPTH_TRIG = 4
+PIN_DEPTH_ECHO = 5
 
 # Outputs
 PIN_PRESSURE_PUMP = 6
-PIN_FLOW = 7
-PIN_EC_PUMP = 8
+PIN_PRESSURE_FLOW = 7
+PIN_EC_UP_PUMP = 8
 PIN_PH_DOWN_PUMP = 9
-PIN_FLOW_WATER = 10
+PIN_WATER_FLOW = 10
 
 # Parameters
 #-------------------------------------------------------------------------------
