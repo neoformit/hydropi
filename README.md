@@ -2,7 +2,7 @@
 
 ### Hardware
 - [ ] Design component board (pi, power source, sensors, valves etc)
-- Order components
+- [ ] Order components
   - [ ] Power source - 5v electronic
   - [ ] Power source - 24vac
   - [ ] Pump
