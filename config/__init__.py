@@ -23,7 +23,7 @@ DATABASE = {
 }
 
 with open('config.yaml') as f:
-    DEFAULTS = yaml.load_safe(f)
+    DEFAULTS = yaml.safe_load(f)
 
 # Create default config
 config = SimpleNamespace(**DEFAULTS)
