@@ -4,7 +4,7 @@ from config import config
 from .controller import AbstractController
 
 
-class NutrientFlowController(AbstractController):
+class FlowController(AbstractController):
     """Control valve to deliver nutrient solution."""
 
     def __init__(self):

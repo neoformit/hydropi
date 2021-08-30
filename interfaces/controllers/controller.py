@@ -12,7 +12,7 @@ class AbstractController:
     def __init__(self, pin):
         """Initialize interface."""
         self.PIN = pin
-        self.state = self.CLOSED
+        self.state = self.OFF
         io.setmode(io.BCM)
         io.setup(self.PIN, io.OUT)
         io.output(self.PIN, self.state)

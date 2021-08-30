@@ -3,12 +3,12 @@
 import time
 
 from config import config
-from interfaces.controllers.flow import NutrientFlowController
+from interfaces.controllers.flow import FlowController
 
 
 def mist():
     """Periodically release nutrients."""
-    flow = NutrientFlowController()
+    flow = FlowController()
     while True:
         flow.on()
         time.sleep(config.MIST_DURATION_SECONDS)
