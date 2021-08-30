@@ -1,13 +1,19 @@
-"""Monitor hydroponics system to maintain state."""
+"""Monitor hydroponics system to maintain state.
+
+Pass database parameters to enable real-time configuration.
+"""
 
 import time
 from threading import Thread
 
-from config import config
 import process
 
 
-def main():
+def cycle():
     """Monitor and maintain the system."""
     Thread(target=process.mist).start()
     Thread(target=process.sweep).start()
+
+
+if __name__ == '__main__':
+    cycle()
