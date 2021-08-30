@@ -3,7 +3,7 @@
 import time
 from threading import Thread
 
-import config
+from config import config
 import process
 
 

@@ -1,6 +1,6 @@
 """Operate doser pump to deliver nutrients to the nutrient reservoir."""
 
-import config
+from config import config
 from .controller import AbstractController
 
 

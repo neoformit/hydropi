@@ -14,6 +14,7 @@ from adafruit_mcp3xxx.analog_in import AnalogIn
 
 
 class AnalogueInterface:
+    """Abstract interface for an analogue sensor input."""
 
     def __init__(self, channel):
         """Build interface to MCP3008 chip.
@@ -24,8 +25,9 @@ class AnalogueInterface:
         CS = digitalio.DigitalInOut(board.D22)
         MCP = MCP.MCP3008(spi, cs)
 
-        # Create analog input channels
-        self.interface = AnalogIn(mcp, eval(f"MCP.P{channel}"))  # Should use getattr here
+        # Create analog input channel
+        pin = getattr(MCP, f"P{channel}")
+        self.interface = AnalogIn(mcp, pin)
 
     def read():
         """Return channel reading."""

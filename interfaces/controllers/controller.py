@@ -1,6 +1,5 @@
 """Abstract controller for single pin output signals."""
 
-import config
 import RPi.GPIO as io
 
 

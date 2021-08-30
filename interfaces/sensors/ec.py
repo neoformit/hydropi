@@ -1,6 +1,6 @@
 """Interface for reading nutrient conductivity levels."""
 
-import config
+from config import config
 from .analogue import AnalogueInterface
 
 

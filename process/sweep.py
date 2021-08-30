@@ -1,6 +1,6 @@
 """Perform a sweep of all parameters and apply corrections as necessary."""
 
-import config
+from config import config
 from interfaces import controllers, sensors
 
 

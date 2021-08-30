@@ -2,7 +2,7 @@
 
 import time
 
-import config
+from config import config
 from interfaces.controllers.flow import NutrientFlowController
 
 
@@ -11,6 +11,6 @@ def mist():
     flow = NutrientFlowController()
     while True:
         flow.on()
-        time.sleep(config.get('MIST_DURATION_SECONDS'))
+        time.sleep(config.MIST_DURATION_SECONDS)
         flow.off()
-        time.sleep(CYCLE_MINUTES * 60 - config.get('MIST_CYCLE_MINUTES'))
+        time.sleep(CYCLE_MINUTES * 60 - config.MIST_CYCLE_MINUTES)

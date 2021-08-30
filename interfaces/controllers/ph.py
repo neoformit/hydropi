@@ -1,6 +1,6 @@
 """Operate doser pump to decrease the pH of the nutrient reservoir."""
 
-import config
+from config import config
 from .controller import AbstractController
 
 

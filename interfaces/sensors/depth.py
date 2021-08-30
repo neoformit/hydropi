@@ -3,7 +3,7 @@
 See https://tutorials-raspberrypi.com/raspberry-pi-ultrasonic-sensor-hc-sr04/
 """
 
-import config
+from config import config
 import RPi.GPIO as io
 
 SONIC_SPEED = 34300  # cm/sec
@@ -37,7 +37,7 @@ class DepthSensor:
 
         elapsed = stop - start
         return (
-            (elapsed * SONIC_SPEED)   # time -> distance
-            / 2                     # There and back
-            / 10                    # cm -> mm
+            (elapsed * SONIC_SPEED)  # time -> distance
+            / 2                      # There and back
+            / 10                     # cm -> mm
         )

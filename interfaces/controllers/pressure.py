@@ -1,6 +1,6 @@
 """Operate pressure pump to regulate tank pressure."""
 
-import config
+from config import config
 import RPi.GPIO as io
 
 

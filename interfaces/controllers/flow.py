@@ -1,6 +1,6 @@
 """Operate solenoid valve to control nutrient flow from pressure tank."""
 
-import config
+from config import config
 from .controller import AbstractController
 
 
