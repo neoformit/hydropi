@@ -3,7 +3,6 @@
 Pass database parameters to enable real-time configuration.
 """
 
-import time
 from threading import Thread
 from argparse import ArgumentParser
 from importlib import import_module
@@ -22,16 +21,16 @@ def get_args():
     """Parse command line arguments."""
     ap = ArgumentParser(description='Process some integers.')
     ap.add_argument(
-        '--test-interface',
-        dest='module',
+        '--test-component',
+        dest='component',
         type=str,
-        help="Test an interface module",
+        help="Test an interface class",
     )
     return ap.parse_args()
 
 
 def test(component):
-    """Test the given interface module."""
+    """Test the given interface class."""
     C = import_module(component)
     obj = C()
     if not getattr(obj, 'test'):
@@ -42,7 +41,7 @@ def test(component):
 
 if __name__ == '__main__':
     args = get_args()
-    if args.test_module:
-        test(args.test_module)
+    if args.test_component:
+        test(args.test_component)
     else:
         cycle()
