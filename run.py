@@ -30,12 +30,14 @@ def get_args():
     return ap.parse_args()
 
 
-def test(module):
+def test(component):
     """Test the given interface module."""
-    m = import_module(module)
-    if not getattr(m, 'test'):
-        raise AttributeError(f"Failed: Object '{module}' has no test method.")
-    m.test()
+    C = import_module(component)
+    obj = C()
+    if not getattr(obj, 'test'):
+        raise AttributeError(
+            f"Failed: Object '{component}' has no test method.")
+    obj.test()
 
 
 if __name__ == '__main__':
