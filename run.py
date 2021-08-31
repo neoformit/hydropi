@@ -3,6 +3,7 @@
 Pass database parameters to enable real-time configuration.
 """
 
+import RPi.GPIO as io
 from threading import Thread
 from argparse import ArgumentParser
 from importlib import import_module
@@ -21,8 +22,8 @@ def get_args():
     """Parse command line arguments."""
     ap = ArgumentParser(description='Process some integers.')
     ap.add_argument(
-        '--test-component',
-        dest='component',
+        '--test',
+        dest='test_component',
         type=str,
         help="Test an interface class",
     )
@@ -31,17 +32,22 @@ def get_args():
 
 def test(component):
     """Test the given interface class."""
-    C = import_module(component)
+    module, classname = component.rsplit('.', 1)
+    m = import_module(module)
+    C = getattr(m, classname)
     obj = C()
-    if not getattr(obj, 'test'):
+    if not hasattr(obj, 'test'):
         raise AttributeError(
             f"Failed: Object '{component}' has no test method.")
     obj.test()
 
 
 if __name__ == '__main__':
-    args = get_args()
-    if args.test_component:
-        test(args.test_component)
-    else:
-        cycle()
+    try:
+        args = get_args()
+        if args.test_component:
+            test(args.test_component)
+        else:
+            cycle()
+    finally:
+        io.cleanup()

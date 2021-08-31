@@ -1,6 +1,6 @@
 """Interface for reading nutrient reservoir depth.
 
-See https://tutorials-raspberrypi.com/raspberry-pi-ultrasonic-sensor-hc-sr04/
+https://tutorials-raspberrypi.com/raspberry-pi-ultrasonic-sensor-hc-sr04/
 """
 
 import time
@@ -19,21 +19,23 @@ class DepthSensor:
         io.setmode(io.BCM)
         io.setup(config.PIN_DEPTH_TRIG, io.OUT)
         io.setup(config.PIN_DEPTH_ECHO, io.IN)
+        io.output(config.PIN_DEPTH_TRIG, 0)
+        time.sleep(1)
 
     def read(self):
         """Return current depth in mm."""
-        io.output(config.GPIO_TRIGGER, 1)
+        io.output(config.PIN_DEPTH_TRIG, 1)
         time.sleep(0.00001)
-        io.output(config.GPIO_TRIGGER, 0)
+        io.output(config.PIN_DEPTH_TRIG, 0)
 
         start = time.time()
         stop = time.time()
 
-        # save start time
+        # collect end of echo pulse
         while io.input(config.PIN_DEPTH_ECHO) == 0:
             start = time.time()
 
-        # save time of arrival
+        # collect end of echo pulse
         while io.input(config.PIN_DEPTH_ECHO) == 1:
             stop = time.time()
 
