@@ -3,8 +3,10 @@
 See https://tutorials-raspberrypi.com/raspberry-pi-ultrasonic-sensor-hc-sr04/
 """
 
-from config import config
+import time
 import RPi.GPIO as io
+
+from config import config
 
 SONIC_SPEED = 34300  # cm/sec
 
@@ -20,9 +22,9 @@ class DepthSensor:
 
     def read(self):
         """Return current depth in mm."""
-        io.output(GPIO_TRIGGER, 1)
+        io.output(config.GPIO_TRIGGER, 1)
         time.sleep(0.00001)
-        io.output(GPIO_TRIGGER, 0)
+        io.output(config.GPIO_TRIGGER, 0)
 
         start = time.time()
         stop = time.time()
@@ -41,3 +43,9 @@ class DepthSensor:
             / 2                      # There and back
             / 10                     # cm -> mm
         )
+
+    def test(self):
+        """Test the component interface."""
+        while True:
+            print(f"Reading: {self.read()}mm")
+            time.sleep(1)

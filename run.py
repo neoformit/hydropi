@@ -5,6 +5,8 @@ Pass database parameters to enable real-time configuration.
 
 import time
 from threading import Thread
+from argparse import ArgumentParser
+from importlib import import_module
 
 from process.delivery import mist
 from process.maintenance import sweep
@@ -12,9 +14,33 @@ from process.maintenance import sweep
 
 def cycle():
     """Monitor and maintain the system."""
-    Thread(target=process.mist).start()
-    Thread(target=process.sweep).start()
+    Thread(target=mist).start()
+    Thread(target=sweep).start()
+
+
+def get_args():
+    """Parse command line arguments."""
+    ap = ArgumentParser(description='Process some integers.')
+    ap.add_argument(
+        '--test-interface',
+        dest='module',
+        type=str,
+        help="Test an interface module",
+    )
+    return ap.parse_args()
+
+
+def test(module):
+    """Test the given interface module."""
+    m = import_module(module)
+    if not getattr(m, 'test'):
+        raise AttributeError(f"Failed: Object '{module}' has no test method.")
+    m.test()
 
 
 if __name__ == '__main__':
-    cycle()
+    args = get_args()
+    if args.test_module:
+        test(args.test_module)
+    else:
+        cycle()
