@@ -14,6 +14,8 @@ SONIC_SPEED = 34300  # cm/sec
 class DepthSensor:
     """Interface for digital depth sensor."""
 
+    UNIT = 'mm'
+
     def __init__(self):
         """Initialise interface."""
         io.setmode(io.BCM)
@@ -49,5 +51,5 @@ class DepthSensor:
     def test(self):
         """Test the component interface."""
         while True:
-            print(f"Reading: {self.read()}mm")
+            print(f"READING: {self.read()}{self.UNIT}")
             time.sleep(1)
