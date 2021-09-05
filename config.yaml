@@ -73,4 +73,7 @@ DEPTH_ACTION_THRESHOLD: 0.75
 
 # DATABASE:
 #   - SQLITE_PATH: "db.sqlite"
-#   - TABLE_NAME: "dash_config"
+#   - CONFIG_TABLE_NAME: "dash_config"
+#   - CONFIG_VALUE_FIELD: "key"
+#   - CONFIG_KEY_FIELD: "value"
+#   - READINGS_TABLE_NAME: "dash_reading"

@@ -15,3 +15,4 @@ def sweep():
     stat['pressure'] = check.pressure.level()
 
     # Write current stat to config.db
+    # config.db.write_stat(stat)
