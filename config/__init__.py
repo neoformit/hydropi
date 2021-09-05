@@ -11,6 +11,7 @@ access config through an interface `config.get(PARAM)` for this to work
 properly.
 """
 
+import os
 import yaml
 import logging
 
@@ -26,7 +27,7 @@ class Config:
     def __init__(self, fname):
         """Read in config from yaml."""
         with open(fname) as f:
-            self.__config__ = yaml.safe_load(f)
+            self.__config__ = self.parse(yaml.safe_load(f))
 
         configure_logger(self)
 
@@ -43,6 +44,19 @@ class Config:
     def __setattr__(self, key, value):
         """Set config key with value."""
         self.__config__[key] = value
+
+    def parse(self, config):
+        """Parse and interpret the config data."""
+        if config['CONFIG_DIR'].startswith('~'):
+            config['CONFIG_DIR'] = os.path.expanduser(config['CONFIG_DIR'])
+        config['TEMP_DIR'] = os.path.join(config['CONFIG_DIR'], 'tmp')
+        return config
+
+    def build_dirs(self, dirs):
+        """Create missing directories."""
+        for d in dirs:
+            if not os.path.exists(d):
+                os.mkdir(d)
 
     def update(self, new):
         """Update config from dict.

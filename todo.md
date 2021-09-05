@@ -1,5 +1,7 @@
-# Things to test
+# Build
+- [x] Transfer controller ownership on instantiation
 
+# Test
 - [ ] Interfaces
   - [ ] Sensors
     - [ ] Depth
