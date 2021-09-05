@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """Monitor hydroponics system to maintain state.
 
 Pass database parameters to enable real-time configuration.
@@ -12,7 +14,7 @@ from process.delivery import mist
 from process.maintenance import sweep
 
 
-def cycle():
+def main():
     """Monitor and maintain the system."""
     Thread(target=mist).start()
     Thread(target=sweep).start()
@@ -38,7 +40,9 @@ def test(component):
     obj = C()
     if not hasattr(obj, 'test'):
         raise AttributeError(
-            f"Failed: Object '{component}' has no test method.")
+            f"Failed: Class '{component}' has no test method."
+            " Add a test method to make this class testable."
+        )
     obj.test()
 
 
@@ -48,6 +52,6 @@ if __name__ == '__main__':
         if args.test_component:
             test(args.test_component)
         else:
-            cycle()
+            main()
     finally:
         io.cleanup()

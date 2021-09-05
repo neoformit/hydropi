@@ -12,28 +12,59 @@ properly.
 """
 
 import yaml
-from types import SimpleNamespace
+import logging
 
 from .db import DB
+from .logging import configure as configure_logger
+
+logger = logging.getLogger(__name__)
 
 
-DATABASE = {
-    # 'SQLITE_PATH': 'db.sqlite',
-    # 'TABLE_NAME': 'dash_config',
-}
+class Config:
+    """Read in, store and update config."""
 
-with open('config.yaml') as f:
-    DEFAULTS = yaml.safe_load(f)
+    def __init__(self, fname):
+        """Read in config from yaml."""
+        with open(fname) as f:
+            self.__config__ = yaml.safe_load(f)
 
-# Create default config
-config = SimpleNamespace(**DEFAULTS)
-db = DB()
+        configure_logger(self)
 
-# Override with database values if present
-if DATABASE:
-    db_keys = {
-        db.get(DEFAULTS[key])
-        for key in DEFAULTS
-        if db.get(DEFAULTS[key])
-    }
-    config.update(db_keys)
+        if hasattr(self.DATABASE):
+            self.db = DB()  # NOT YET CONFIGURED
+            config.update_from_db()
+        else:
+            self.db = None
+
+    def __getattr__(self, key):
+        """Return key from config."""
+        return self.__config__[key]
+
+    def __setattr__(self, key, value):
+        """Set config key with value."""
+        self.__config__[key] = value
+
+    def update(self, new):
+        """Update config from dict.
+
+        Will only create new attributes, only update existing.
+        """
+        for k, v in new.items():
+            if k in self.__config__:
+                self.__config__[k] = v
+
+    def update_from_db(self):
+        """Read in config from database connection."""
+        if not self.db:
+            logger.warning("Trying update config from DB without connection.")
+            return
+        db_keys = set(self.db.keys).intersection(set(self.__config__))
+        db_config = {
+            k: self.db.get(k)
+            for k in db_keys
+        }
+        self.update(db_config)
+
+
+# Load defaults from yaml file
+config = Config('config.yaml')
