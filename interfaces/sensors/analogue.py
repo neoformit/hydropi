@@ -13,6 +13,7 @@ import board
 import busio
 import logging
 import digitalio
+import statistics
 import adafruit_mcp3xxx.mcp3008 as MCP
 from adafruit_mcp3xxx.analog_in import AnalogIn
 
@@ -23,6 +24,7 @@ class AnalogueInterface:
     """Abstract interface for an analogue sensor input."""
 
     UNIT = None
+    MEDIAN_INTERVAL_SECONDS = 0.1
 
     def __init__(self, channel):
         """Build interface to MCP3008 chip.
@@ -39,9 +41,23 @@ class AnalogueInterface:
         if self.UNIT is None:
             raise AttributeError("AnalogueInterface must define a UNIT")
 
-    def read(self):
+    def read(self, n=1):
         """Return channel reading."""
-        return self.interface.value
+        if n == 1:
+            r = self.interface.value
+        else:
+            r = self.read_median(n)
+        logger.debug(
+            f"{type(self).__name__} READ: {r} {self.UNIT} (n={n})")
+        return r
+
+    def read_median(self, n):
+        """Return median channel reading from <n> samples."""
+        readings = []
+        for i in range(n):
+            readings.append(self.interface.value)
+            time.sleep(self.MEDIAN_INTERVAL_SECONDS)
+        return statistics.median(readings)
 
     def test(self):
         """Test channel readings."""

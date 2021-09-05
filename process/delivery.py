@@ -1,16 +1,23 @@
 """Perform cyclical release of nutrient solution."""
 
 import time
+import logging
 
 from config import config
-from interfaces.controllers.flow import FlowController
+from interfaces.controllers.mist import MistController
+
+logger = logging.getLogger(__name__)
 
 
 def mist():
-    """Periodically release nutrients."""
-    flow = FlowController()
+    """Periodically release nutrient mist."""
+    mist = MistController()
     while True:
-        flow.on()
+        logger.debug(f"ACTION: MIST {config.MIST_DURATION_SECONDS} SECONDS")
+        mist.on()
         time.sleep(config.MIST_DURATION_SECONDS)
-        flow.off()
-        time.sleep(CYCLE_MINUTES * 60 - config.MIST_CYCLE_MINUTES)
+        mist.off()
+        time.sleep(
+            60 * config.MIST_CYCLE_MINUTES
+            - config.MIST_DURATION_SECONDS
+        )

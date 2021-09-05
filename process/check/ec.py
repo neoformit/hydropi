@@ -10,7 +10,7 @@ from interfaces.controller.ec import ECController
 logger = logging.getLogger(__name__)
 
 
-def levels():
+def level():
     """Check nutrient levels."""
     sensor = ECSensor()
     stat = sensor.read(n=5)

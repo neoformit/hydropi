@@ -17,17 +17,17 @@ class ECController(AbstractController):
 
     def __init__(self):
         """Initialize interface."""
-        super().__init__(config.PIN_EC_UP_PUMP)
+        super().__init__(config.PIN_NUTRIENT_PUMP)
 
     def top_up(self):
         """Top up nutrient levels."""
-        units = config.EC_TOPUP_UNITS
+        seconds = config.EC_ADDITION_SECONDS
         delay = config.MIX_ADDITION_DELAY_SECONDS
-        logger.info(f"ACTION: top up nutrient levels {units} units")
+        logger.info(f"ACTION: top up nutrient levels {seconds} seconds")
         logger.info(f"DELAY: {delay} seconds")
         mixer = MixController()
         Thread(target=mixer.run).start()
         time.sleep(delay)
         self.on()
-        time.sleep(units)
+        time.sleep(seconds)
         self.off()
