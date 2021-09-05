@@ -20,14 +20,17 @@ PIN_PRESSURE_FLOW: 7
 PIN_EC_UP_PUMP: 8
 PIN_PH_DOWN_PUMP: 9
 PIN_WATER_FLOW: 10
+PIN_MIX_PUMP: 11
 
 # Parameters
 #-------------------------------------------------------------------------------
 
-# Cycle durations
+# Timing
 SWEEP_CYCLE_MINUTES: 15
 MIST_CYCLE_MINUTES: 5
 MIST_DURATION_SECONDS: 15
+MIX_PUMP_SECONDS = 60
+MIX_ADDITION_DELAY_SECONDS = 10
 
 # Pressure monitoring
 MIN_PRESSURE: None
