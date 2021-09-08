@@ -27,23 +27,39 @@ class Config:
     def __init__(self, fname):
         """Read in config from yaml."""
         with open(fname) as f:
-            self.__config__ = self.parse(yaml.safe_load(f))
+            __config__ = yaml.safe_load(f)
+
+        for k, v in __config__.items():
+            setattr(self, k, v)
 
         configure_logger(self)
 
-        if hasattr(self.DATABASE):
+        if hasattr(self, 'DATABASE'):
             self.db = DB()  # NOT YET CONFIGURED
             config.update_from_db()
         else:
             self.db = None
 
-    def __getattr__(self, key):
-        """Return key from config."""
-        return self.__config__[key]
+    def update(self, new):
+        """Update config from dict.
 
-    def __setattr__(self, key, value):
-        """Set config key with value."""
-        self.__config__[key] = value
+        Will only create new attributes, only update existing.
+        """
+        for k, v in new.items():
+            if hasattr(self, k):
+                setattr(self, k, v)
+
+    def update_from_db(self):
+        """Read in config from database connection."""
+        if not self.db:
+            logger.warning("Trying update config from DB without connection.")
+            return
+        db_keys = set(self.db.keys).intersection(set(self.__config__))
+        db_config = {
+            k: self.db.get(k)
+            for k in db_keys
+        }
+        self.update(db_config)
 
     def parse(self, config):
         """Parse and interpret the config data."""
@@ -58,27 +74,6 @@ class Config:
             if not os.path.exists(d):
                 os.mkdir(d)
 
-    def update(self, new):
-        """Update config from dict.
-
-        Will only create new attributes, only update existing.
-        """
-        for k, v in new.items():
-            if k in self.__config__:
-                self.__config__[k] = v
-
-    def update_from_db(self):
-        """Read in config from database connection."""
-        if not self.db:
-            logger.warning("Trying update config from DB without connection.")
-            return
-        db_keys = set(self.db.keys).intersection(set(self.__config__))
-        db_config = {
-            k: self.db.get(k)
-            for k in db_keys
-        }
-        self.update(db_config)
-
 
 # Load defaults from yaml file
-config = Config('config.yaml')
+config = Config('config.yml')
