@@ -1,0 +1,60 @@
+# Parameters
+#-------------------------------------------------------------------------------
+
+# Inputs
+CHANNEL_PH: 1
+CHANNEL_EC: 2
+CHANNEL_PRESSURE: 3
+PIN_DEPTH_TRIG: 4
+PIN_DEPTH_ECHO: 5
+
+# MSP3008 ADC chip
+PIN_MISO: 19  # Din
+PIN_MOSI: 20  # Dout
+PIN_SCLK: 21  # CLK
+PIN_CS: 26    # Channel select
+
+# Outputs
+PIN_PRESSURE_PUMP: 6
+PIN_PRESSURE_FLOW: 7
+PIN_EC_UP_PUMP: 8
+PIN_PH_DOWN_PUMP: 9
+PIN_WATER_FLOW: 10
+PIN_MIX_PUMP: 11
+
+# Parameters
+#-------------------------------------------------------------------------------
+
+# Timing
+SWEEP_CYCLE_MINUTES: 15
+MIST_CYCLE_MINUTES: 5
+MIST_DURATION_SECONDS: 15
+MIX_PUMP_SECONDS: 60
+MIX_ADDITION_DELAY_SECONDS: 10
+MEDIAN_SAMPLE_DELAY_SECONDS: 0.01
+
+# Pressure monitoring
+MIN_PRESSURE: None
+MAX_PRESSURE: None
+QUIET_TIME_START: "20:00"
+QUIET_TIME_END: "07:00"
+
+# PH monitoring
+PH_TARGET: 6.0
+PH_LIMIT_WARN: 0.5
+PH_LIMIT_DANGER: 1
+PH_ACTION_THRESHOLD: 0.25
+
+# EC monitoring
+EC_TARGET: 1.8
+EC_LIMIT_WARN: 0.4
+EC_LIMIT_DANGER: 1
+EC_ACTION_THRESHOLD: 0.2
+
+# Water level monitoring
+DEPTH_UNIT: "mm"
+DEPTH_MAXIMUM_UNITS: None       # Units when full (e.g. 200mm)
+DEPTH_TARGET: 1.0               # Full
+DEPTH_LIMIT_WARN: 0.75          # 75%
+DEPTH_LIMIT_DANGER: 0.5
+DEPTH_ACTION_THRESHOLD: 0.75

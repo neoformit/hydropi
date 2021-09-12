@@ -76,4 +76,4 @@ class Config:
 
 
 # Load defaults from yaml file
-config = Config('config.yaml')
+config = Config('config.yml')
