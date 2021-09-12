@@ -7,25 +7,25 @@ CONFIG_DIR: '~/.hydropi'
 #-------------------------------------------------------------------------------
 
 # Inputs
-CHANNEL_PH: 1
-CHANNEL_EC: 2
-CHANNEL_PRESSURE: 3
+CHANNEL_PH: 0        # Channels 0-7
+CHANNEL_EC: 1
+CHANNEL_PRESSURE: 2
 PIN_DEPTH_TRIG: 4
 PIN_DEPTH_ECHO: 5
 
 # MSP3008 ADC chip
-PIN_MISO: 19  # Din
-PIN_MOSI: 20  # Dout
-PIN_SCLK: 21  # CLK
-PIN_CS: 26    # Channel select
+PIN_CS:   8   # Chip select
+PIN_MISO: 9   # Din
+PIN_MOSI: 10  # Dout
+PIN_CLK: 11   # CLK
 
 # Outputs
-PIN_PRESSURE_PUMP: 6
-PIN_MIST_VALVE: 7
-PIN_NUTRIENT_PUMP: 8
-PIN_PH_DOWN_PUMP: 9
-PIN_WATER_VALVE: 10
-PIN_MIX_PUMP: 11
+PIN_PRESSURE_PUMP: -1
+PIN_MIST_VALVE: -1
+PIN_NUTRIENT_PUMP: -1
+PIN_PH_DOWN_PUMP: -1
+PIN_WATER_VALVE: -1
+PIN_MIX_PUMP: -1
 
 # Parameters
 #-------------------------------------------------------------------------------

@@ -3,15 +3,13 @@
 import sqlite3
 import logging
 
-from config import config
-
 logger = logging.getLogger(__name__)
 
 
 class DB:
     """Database interface for access to dynamic config."""
 
-    def __init__(self):
+    def __init__(self, config):
         """Initiate database connection."""
         try:
             self.connection = sqlite3.connect(config.DATABASE.SQLITE_PATH)

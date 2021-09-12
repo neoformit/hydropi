@@ -16,7 +16,7 @@ import yaml
 import logging
 
 from .db import DB
-from .logging import configure as configure_logger
+from .logconf import configure as configure_logger
 
 logger = logging.getLogger(__name__)
 
@@ -27,23 +27,16 @@ class Config:
     def __init__(self, fname):
         """Read in config from yaml."""
         with open(fname) as f:
-            self.__config__ = self.parse(yaml.safe_load(f))
+            for k, v in self.parse(yaml.safe_load(f)).items():
+                setattr(self, k, v)
 
         configure_logger(self)
 
-        if hasattr(self.DATABASE):
-            self.db = DB()  # NOT YET CONFIGURED
+        if hasattr(self, 'DATABASE'):
+            self.db = DB(self)  # NOT YET CONFIGURED
             config.update_from_db()
         else:
             self.db = None
-
-    def __getattr__(self, key):
-        """Return key from config."""
-        return self.__config__[key]
-
-    def __setattr__(self, key, value):
-        """Set config key with value."""
-        self.__config__[key] = value
 
     def parse(self, config):
         """Parse and interpret the config data."""
@@ -64,15 +57,17 @@ class Config:
         Will only create new attributes, only update existing.
         """
         for k, v in new.items():
-            if k in self.__config__:
-                self.__config__[k] = v
+            if hasattr(self, k):
+                setattr(self, k, v)
+            else:
+                logger.warning(f"Trying to set invalid config key {k}")
 
     def update_from_db(self):
         """Read in config from database connection."""
         if not self.db:
             logger.warning("Trying update config from DB without connection.")
             return
-        db_keys = set(self.db.keys).intersection(set(self.__config__))
+        db_keys = set(self.db.keys).intersection(set(self.__dict__))
         db_config = {
             k: self.db.get(k)
             for k in db_keys
