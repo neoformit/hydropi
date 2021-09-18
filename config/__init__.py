@@ -34,7 +34,7 @@ class Config:
 
         if hasattr(self, 'DATABASE'):
             self.db = DB(self)  # NOT YET CONFIGURED
-            config.update_from_db()
+            self.update_from_db()
         else:
             self.db = None
 
@@ -68,9 +68,13 @@ class Config:
             logger.warning("Trying update config from DB without connection.")
             return
         db_keys = set(self.db.keys).intersection(set(self.__dict__))
+
+        # Request config state from DB
+        # This will grab only keys with set values
         db_config = {
-            k: self.db.get(k)
+            k: self.db[k]
             for k in db_keys
+            if self.db.get(k) is not None
         }
         self.update(db_config)
 

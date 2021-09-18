@@ -1,6 +1,4 @@
-"""Utilities for reading sensor input.
-
-`pip3 install Adafruit_MCP3008`
+"""Read generic analogue signals.
 
 https://learn.adafruit.com/raspberry-pi-analog-to-digital-converters/mcp3008
 

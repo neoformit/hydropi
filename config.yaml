@@ -10,6 +10,7 @@ CONFIG_DIR: '~/.hydropi'
 CHANNEL_PH: 0        # Channels 0-7
 CHANNEL_EC: 1
 CHANNEL_PRESSURE: 2
+CHANNEL_TEMPERATURE: 3
 PIN_DEPTH_TRIG: 4
 PIN_DEPTH_ECHO: 5
 
@@ -76,6 +77,6 @@ DEPTH_ACTION_THRESHOLD: 0.75
 # DATABASE:
 #   - SQLITE_PATH: "db.sqlite"
 #   - CONFIG_TABLE_NAME: "dash_config"
-#   - CONFIG_VALUE_FIELD: "key"
-#   - CONFIG_KEY_FIELD: "value"
-#   - READINGS_TABLE_NAME: "dash_reading"
+#   - CONFIG_KEY_FIELD: "key"
+#   - CONFIG_VALUE_FIELD: "value"
+#   - READINGS_TABLE_NAME: "dash_monitor"

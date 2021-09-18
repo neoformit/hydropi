@@ -7,7 +7,7 @@ from .analogue import AnalogueInterface
 class PressureSensor(AnalogueInterface):
     """Interface for analogue pressure sensor.
 
-    Call .read() to get current pressure.
+    Call read() to get current pressure.
 
     0.33 - 3 volts -> 0 - 145 psi
     """

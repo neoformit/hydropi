@@ -13,11 +13,17 @@ from importlib import import_module
 from process.delivery import mist
 from process.maintenance import sweep
 
+import signal
+signal.signal(signal.SIGINT, signal.default_int_handler)
+
 
 def main():
     """Monitor and maintain the system."""
-    Thread(target=mist).start()
-    Thread(target=sweep).start()
+    try:
+        Thread(target=mist).start()
+        Thread(target=sweep).start()
+    finally:
+        io.cleanup()
 
 
 def get_args():

@@ -2,9 +2,10 @@
 #-------------------------------------------------------------------------------
 
 # Inputs
-CHANNEL_PH: 1
-CHANNEL_EC: 2
-CHANNEL_PRESSURE: 3
+CHANNEL_PH: 0
+CHANNEL_EC: 1
+CHANNEL_PRESSURE: 2
+CHANNEL_TEMPERATURE: 3
 PIN_DEPTH_TRIG: 4
 PIN_DEPTH_ECHO: 5
 

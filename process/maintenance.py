@@ -2,15 +2,17 @@
 
 from config import config
 
+from interfaces.sensors import thermometer
 from . import check
 
 
 def sweep():
     """Perform sweep, log readings and adjust."""
-    # TODO: Check that these functions are non blocking
-    stat = {}
-    stat['ec'] = check.ec.level()
-    stat['ph'] = check.ph.level()
-    stat['tank'] = check.tank.depth()
-    stat['pressure'] = check.pressure.level()
+    stat = {
+        'ec': check.ec.level(),
+        'ph': check.ph.level(),
+        'depth_mm': check.tank.depth(),
+        'pressure_psi': check.pressure.level(),
+        'temp_c': thermometer.read(),
+    }
     config.db.write_stat(stat)
