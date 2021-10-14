@@ -81,3 +81,7 @@ class Config:
 
 # Load defaults from yaml file
 config = Config('config.yml')
+
+# Build dirs
+if not os.path.exists(config.CONFIG_DIR):
+    os.makedirs(config.CONFIG_DIR)

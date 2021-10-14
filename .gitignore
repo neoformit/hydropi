@@ -1,4 +1,6 @@
 # Specific
+config.yml
+config.yaml
 
 # File types
 *.ignore

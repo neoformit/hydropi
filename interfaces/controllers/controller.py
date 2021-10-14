@@ -61,8 +61,11 @@ class AbstractController:
 
     @property
     def deed(self):
-        """Return filename of deed."""
-        return os.path.join(config.TEMP_DIR, f"{type(self).__name__}.deed")
+        """Return filepath of deed."""
+        path = os.path.join(config.TEMP_DIR, f"{type(self).__name__}.deed")
+        if not os.path.exists(os.path.dirname(path)):
+            os.mkdir(os.path.dirname(path))
+        return path
 
     def test(self):
         """Test the controller."""
