@@ -7,7 +7,7 @@ from threading import Thread
 from config import config
 
 from .controller import AbstractController
-from .mix import MixController
+from .mix import MixPumpController
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class PHController(AbstractController):
         delay = config.MIX_ADDITION_DELAY_SECONDS
         logger.info(f"ACTION: pH down addition {seconds} seconds")
         logger.info(f"DELAY: {delay} seconds")
-        mixer = MixController()
+        mixer = MixPumpController()
         Thread(target=mixer.run).start()
         time.sleep(delay)
         self.on()
