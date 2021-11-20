@@ -9,7 +9,7 @@ from .controller import AbstractController
 logger = logging.getLogger(__name__)
 
 
-class MixController(AbstractController):
+class MixPumpController(AbstractController):
     """Control pump to mix nutrient solution."""
 
     def __init__(self):

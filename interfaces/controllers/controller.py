@@ -15,8 +15,9 @@ logger = logging.getLogger(__name__)
 class AbstractController:
     """Control a single pin output device."""
 
-    ON = 0
-    OFF = 1
+    # Yes, how strange that low is 'on' for this relay...
+    ON = 0   # GPIO low
+    OFF = 1  # GPIO high
 
     def __init__(self, pin):
         """Initialize interface."""
