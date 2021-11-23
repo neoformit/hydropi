@@ -11,6 +11,10 @@ class PHSensor(AnalogueInterface):
     """
 
     UNIT = 'pH'
+    MIN_UNITS = 0
+    MAX_UNITS = 14
+    MIN_VOLTS = 0
+    MAX_VOLTS = 3.3
 
     def __init__(self):
         """Initialise interface."""

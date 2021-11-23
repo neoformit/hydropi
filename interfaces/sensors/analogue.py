@@ -20,12 +20,13 @@ class AnalogueInterface:
     """Abstract interface for an analogue sensor input."""
 
     UNIT = None
+    VREF = 3.3
+    V0_OFFSET = 0
     MIN_UNITS = None
     MAX_UNITS = None
     MIN_VOLTS = None
     MAX_VOLTS = None
-    V0_OFFSET = 0
-    VREF = 3.3
+    MEDIAN_INTERVAL_SECONDS = None
 
     def __init__(self, channel):
         """Build interface to MCP3008 chip.
@@ -39,6 +40,8 @@ class AnalogueInterface:
             mosi=config.PIN_MOSI,
             clk=config.PIN_CLK,
         )
+        if not getattr(self, 'MEDIAN_INTERVAL_SECONDS'):
+            self.MEDIAN_INTERVAL_SECONDS = config.MEDIAN_INTERVAL_SECONDS
         for attr in (
                 'UNIT',
                 'MIN_UNITS',
@@ -55,15 +58,15 @@ class AnalogueInterface:
     def value(self):
         """Calculate current channel reading."""
         bits = self.mcp.read_adc(self.CHANNEL)
-        print(f"READ BITS: {bits}")
+        logger.debug(f"READ BITS: {bits}")
         volts = bits / 1024 * self.VREF
-        print(f"READ VOLTS: {volts}")
+        logger.debug(f"READ VOLTS: {volts}")
         volts_offset = (
             (volts - self.MIN_VOLTS)
             / ((self.MAX_VOLTS - self.MIN_VOLTS) / self.VREF)
             + self.V0_OFFSET
         )
-        print(f"READ VOLTS OFFSET: {volts_offset}")
+        logger.debug(f"READ VOLTS OFFSET: {volts_offset}")
         return volts_offset * self.MAX_UNITS
 
     def read(self, n=1):

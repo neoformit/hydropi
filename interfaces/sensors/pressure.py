@@ -14,10 +14,10 @@ class PressureSensor(AnalogueInterface):
 
     UNIT = 'psi'
     MIN_UNITS = 0
-    MAX_UNITS = 145
+    MAX_UNITS = 230
     MIN_VOLTS = 0.33
-    MAX_VOLTS = 3
-    V0_OFFSET = 0.009559339887640468
+    MAX_VOLTS = 3.3
+    V0_OFFSET = 0.2707
 
     def __init__(self):
         """Initialise interface."""

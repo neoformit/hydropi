@@ -78,7 +78,7 @@ class DepthSensor:
     def test(self):
         """Test the component interface."""
         while True:
-            print(f"READING: {self.read_median(n=15)}{self.UNIT}")
+            logger.info(f"READING: {self.read_median(n=15)}{self.UNIT}")
             time.sleep(1)
 
 

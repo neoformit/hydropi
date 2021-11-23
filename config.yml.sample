@@ -10,9 +10,10 @@ PIN_DEPTH_TRIG: 4
 PIN_DEPTH_ECHO: 5
 
 # MSP3008 ADC chip
-PIN_MISO: 19  # Din
-PIN_MOSI: 20  # Dout
-PIN_SCLK: 21  # CLK
+# From chip top to bottom
+PIN_CLK: 21   # CLK
+PIN_MISO: 19  # Dout
+PIN_MOSI: 20  # Din
 PIN_CS: 26    # Channel select
 
 # Outputs
