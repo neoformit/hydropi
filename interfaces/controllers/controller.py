@@ -29,6 +29,10 @@ class AbstractController:
         io.setup(self.PIN, io.OUT)
         io.output(self.PIN, self.state)
 
+    def __del__(self):
+        """Clean up on delete."""
+        io.cleanup()
+
     def on(self):
         """Activate the device."""
         self.state = self.ON

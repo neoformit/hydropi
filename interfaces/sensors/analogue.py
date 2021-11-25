@@ -10,6 +10,7 @@ import time
 import logging
 import statistics
 from Adafruit_MCP3008 import MCP3008
+from RPi import GPIO as io
 
 from config import config
 
@@ -54,20 +55,22 @@ class AnalogueInterface:
         if not self.V0_OFFSET:
             logger.warning("No V0_OFFSET set: consider zeroing this device.")
 
+    def __del__(self):
+        """Clean up on delete."""
+        io.cleanup()
+
     @property
     def value(self):
         """Calculate current channel reading."""
+        ref_range = self.MAX_VOLTS - self.MIN_VOLTS
         bits = self.mcp.read_adc(self.CHANNEL)
         logger.debug(f"READ BITS: {bits}")
-        volts = bits / 1024 * self.VREF
-        logger.debug(f"READ VOLTS: {volts}")
-        volts_offset = (
-            (volts - self.MIN_VOLTS)
-            / ((self.MAX_VOLTS - self.MIN_VOLTS) / self.VREF)
-            + self.V0_OFFSET
-        )
-        logger.debug(f"READ VOLTS OFFSET: {volts_offset}")
-        return volts_offset * self.MAX_UNITS
+        volts = self.VREF * bits / 1024
+        logger.debug(f"READ VOLTS: {round(volts, 6)}")
+        volts_offset = volts + self.V0_OFFSET
+        logger.debug(f"READ VOLTS OFFSET: {round(volts_offset, 6)}")
+        fraction = (volts_offset - self.MIN_VOLTS) / ref_range
+        return fraction * self.MAX_UNITS
 
     def read(self, n=1):
         """Return channel reading."""
@@ -76,8 +79,8 @@ class AnalogueInterface:
         else:
             r = self.read_median(n)
         logger.debug(
-            f"{type(self).__name__} READ: {r} {self.UNIT} (n={n})")
-        return r
+            f"{type(self).__name__} READ: {round(r, 4)} {self.UNIT} (n={n})")
+        return round(r, 4)
 
     def read_median(self, n):
         """Return median channel reading from <n> samples."""

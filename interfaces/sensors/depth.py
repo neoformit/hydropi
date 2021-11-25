@@ -34,6 +34,10 @@ class DepthSensor:
         io.output(config.PIN_DEPTH_TRIG, 0)
         time.sleep(1)
 
+    def __del__(self):
+        """Clean up on delete."""
+        io.cleanup()
+
     def read(self, n=1, depth=False):
         """Return current depth in mm."""
         if n > 1:
