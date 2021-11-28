@@ -15,9 +15,7 @@ logger = logging.getLogger(__name__)
 class ECController(AbstractController):
     """Control nutrient delivery to increase EC."""
 
-    def __init__(self):
-        """Initialize interface."""
-        super().__init__(config.PIN_NUTRIENT_PUMP)
+    PIN = config.PIN_NUTRIENT_PUMP
 
     def top_up(self):
         """Top up nutrient levels."""

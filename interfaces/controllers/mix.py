@@ -12,9 +12,7 @@ logger = logging.getLogger(__name__)
 class MixPumpController(AbstractController):
     """Control pump to mix nutrient solution."""
 
-    def __init__(self):
-        """Initialize interface."""
-        super().__init__(config.PIN_MIX_PUMP)
+    PIN = config.PIN_MIX_PUMP
 
     def run(self):
         """Run pump to mix nutrient tank additions."""

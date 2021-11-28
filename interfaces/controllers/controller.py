@@ -15,13 +15,17 @@ logger = logging.getLogger(__name__)
 class AbstractController:
     """Control a single pin output device."""
 
-    # Yes, how strange that low is 'on' for this relay...
-    ON = 0   # GPIO low
-    OFF = 1  # GPIO high
+    # Yes, how strange that low is 'on' for this relay board...
+    ON = 0      # GPIO low
+    OFF = 1     # GPIO high
+    PIN = None  # Must be set
 
-    def __init__(self, pin):
+    def __init__(self):
         """Initialize interface."""
-        self.PIN = pin
+        if self.PIN is None:
+            raise ValueError(
+                "Controller inheriting from AbstractController must set PIN to"
+                " a valid output pin.")
         self.ID = random_string()
         self.state = self.OFF
         self.claim_ownership()

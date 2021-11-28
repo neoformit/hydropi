@@ -18,13 +18,13 @@ def level():
     logger.info(f"READ pressure: {stat} {sensor.UNIT}")
 
     if stat < config.ALERT_PRESSURE_PSI:
-        message = f"Pressure tank below ALERT level: {stat} {sensor.UNIT}"
+        message = f"Tank pressure below ALERT level: {stat} {sensor.UNIT}"
         logger.warning(message)
         notifications.alert(message)
 
     if stat > config.MIN_PRESSURE_PSI:
         logger.debug(
-            "Tank pressure above acceptable minimum of"
+            "Tank pressure reached upper limit of"
             f" {config.MIN_PRESSURE_PSI} {sensor.UNIT}"
         )
         return stat

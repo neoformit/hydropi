@@ -14,14 +14,13 @@ logger = logging.getLogger(__name__)
 class PressurePumpController(AbstractController):
     """Control pressure pump."""
 
-    def __init__(self):
-        """Initialize interface."""
-        super().__init__(config.PIN_PRESSURE_PUMP)
+    PIN = config.PIN_PRESSURE_PUMP
 
     def refill(self):
         """Activate pump to restore system pressure."""
         sensor = PressureSensor()
-        logger.debug("ACTION: restore system pressure")
+        logger.debug(
+            f"ACTION: restore system pressure to {config.MAX_PRESSURE_PSI}")
         self.on()
         while sensor.read() < config.MAX_PRESSURE_PSI:
             time.sleep(1)
