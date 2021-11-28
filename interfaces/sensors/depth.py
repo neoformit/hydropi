@@ -6,7 +6,11 @@ https://tutorials-raspberrypi.com/raspberry-pi-ultrasonic-sensor-hc-sr04/
 import time
 import logging
 import statistics
-import RPi.GPIO as io
+try:
+    import RPi.GPIO as io
+except ModuleNotFoundError:
+    print("WARNING: Can't import Pi packages - assume developer mode")
+    io = None
 
 from config import config
 

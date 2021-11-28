@@ -9,8 +9,12 @@ Not recommended library (deprecated) but the recommended one didn't work!
 import time
 import logging
 import statistics
-from Adafruit_MCP3008 import MCP3008
-from RPi import GPIO as io
+try:
+    from Adafruit_MCP3008 import MCP3008
+    import RPi.GPIO as io
+except ModuleNotFoundError:
+    print("WARNING: Can't import Pi packages - assume developer mode")
+    MCP3008 = io = None
 
 from config import config
 

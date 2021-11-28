@@ -5,7 +5,11 @@ import time
 import string
 import random
 import logging
-import RPi.GPIO as io
+try:
+    import RPi.GPIO as io
+except ModuleNotFoundError:
+    print("WARNING: Can't import Pi packages - assume developer mode")
+    io = None
 
 from config import config
 

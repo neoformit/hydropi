@@ -5,7 +5,11 @@
 Pass database parameters to enable real-time configuration.
 """
 
-import RPi.GPIO as io
+try:
+    import RPi.GPIO as io
+except ModuleNotFoundError:
+    print("WARNING: Can't import Pi packages - assume developer mode")
+    io = None
 from threading import Thread
 from argparse import ArgumentParser
 from importlib import import_module

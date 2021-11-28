@@ -1,4 +1,4 @@
-"""Initialize interfaces for consumption."""
+"""Initialize hardware interfaces for consumption."""
 
 from .sensors.ec import ECSensor
 from .sensors.ph import PHSensor
