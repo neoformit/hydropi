@@ -3,7 +3,6 @@
 Listen for instructions from other processes.
 """
 
-import json
 from socket import (
     socket,
     AF_INET,
@@ -11,7 +10,6 @@ from socket import (
     SO_REUSEADDR,
     SOL_SOCKET
 )
-from requests import Response
 
 from config import config
 from . import routes
@@ -35,31 +33,40 @@ def listen():
                 method, path = request.split('\r\n')[0].split(' ')[:2]
                 print(f"REQUEST METHOD: {method}")
                 print(f"REQUEST PATH: {path}")
-                data = routes.resolve(method, path)
-                client.sendall(response_success(data))
+                response = routes.resolve(method, path)
+                client.sendall(response_success(response))
             except Exception as exc:
                 client.sendall(response_error(exc))
             finally:
                 client.close()
 
 
-def response_success(status=None, data=None):
+def response_success(response):
     """Render HTTP error response from exception."""
-    r = Response()
-    r.code = "Server error"
-    r.status_code = status or 500
-    r._content = (json.dumps(data) or '').encode()
-    return r
+    print("RESPONSE SUCCESS")
+    code = "OK"
+    http_response = (
+        f"HTTP/1.1 {response.status} {code}\n"
+        "Content-Type: application/json\n\n"
+        f"{response.content}\n"
+    )
+    print(f"Response:\n{http_response}")
+    return bytes(http_response, 'utf-8')
 
 
 def response_error(exc=None):
     """Render HTTP error response from exception."""
     if exc:
-        content = f"{exc.__class__}: {exc}"
+        content = f"{exc.__class__.__name__}: {exc}"
     else:
-        content = "Server error"
-    r = Response()
-    r.code = "Server error"
-    r.status_code = getattr(exc, 'status', None) or 500
-    r._content = content.encode()
-    return r
+        content = "Server Error"
+    print(f"RESPONSE ERROR:\n{content}")
+    code = "Server error"
+    status_code = getattr(exc, 'status', 500)
+    response = (
+        f"HTTP/1.1 {status_code} {code}\n"
+        "Content-Type: text/plain\n\n"
+        f"{content}\n"
+    )
+    print(f"Response:\n{response}")
+    return bytes(response, 'utf-8')

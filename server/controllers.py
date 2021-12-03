@@ -1,8 +1,7 @@
 """Client-facing HydroPi services."""
 
-import json
 import process
-import interfaces
+from interfaces import sensors, controllers
 
 
 class IndexController:
@@ -10,10 +9,10 @@ class IndexController:
 
     def get(request):
         """Return hydro status."""
-        return json.dumps({
-            'ph': 5.65,
-            'ec': 2.16,
-            'depth': 0.96,
-            'temperature': 26.3,
-            'pressure': 124,
-        })
+        return {
+            'ph': sensors.get_ph(),
+            'ec': sensors.get_ec(),
+            'depth': sensors.get_depth(),
+            'temperature': sensors.get_temperature(),
+            'pressure': sensors.get_pressure(),
+        }

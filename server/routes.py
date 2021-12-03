@@ -1,5 +1,6 @@
 """Route requests to HydroPi services."""
 
+import json
 import routes
 
 from .exceptions import Http400, Http404
@@ -18,6 +19,15 @@ class Request:
         self.method = method
 
 
+class Response:
+    """Loose representation of a request."""
+
+    def __init__(self, status, data=None):
+        """Create response instance."""
+        self.status = status
+        self.content = json.dumps(data or '')
+
+
 def resolve(method, path):
     """Resolve request URI to handler."""
     request = Request(method=method, path=path)
@@ -27,6 +37,8 @@ def resolve(method, path):
     controller = getattr(
         controllers,
         route['controller'].title() + "Controller")
-    if hasattr(controller, request.method):
-        return getattr(controller, request.method)(request)
+    if hasattr(controller, request.method.lower()):
+        return Response(
+            200,
+            getattr(controller, request.method.lower())(request))
     raise Http400("Method not allowed for this route")
