@@ -23,7 +23,7 @@ CONNECTION_MAX_BACKLOG = 1
 
 
 def listen():
-    """Listen for requests."""
+    """Handle incoming requests."""
     with socket(AF_INET, SOCK_STREAM) as sock:
         sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, SOCKET_OPT_VALUE)
         sock.bind((HOST, PORT))
@@ -33,10 +33,10 @@ def listen():
                 client, address = sock.accept()
                 request = client.recv(BUFFER_MAX_BYTES).decode()
                 method, path = request.split('\r\n')[0].split(' ')[:2]
-                print(f"METHOD: {method}")
-                print(f"PATH: {path}")
-                # data = routes.resolve(method, path)
-                # client.sendall(response_success(data))
+                print(f"REQUEST METHOD: {method}")
+                print(f"REQUEST PATH: {path}")
+                data = routes.resolve(method, path)
+                client.sendall(response_success(data))
             except Exception as exc:
                 client.sendall(response_error(exc))
             finally:
