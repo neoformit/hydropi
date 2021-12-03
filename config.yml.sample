@@ -1,8 +1,14 @@
-# Parameters
+# Environment
+#-------------------------------------------------------------------------------
+DEBUG: True
+CONFIG_DIR: '~/.hydropi'
+DAEMON_HTTP_PORT: 2021
+
+# Hardware pins (BMC)
 #-------------------------------------------------------------------------------
 
 # Inputs
-CHANNEL_PH: 0
+CHANNEL_PH: 0        # MCP3008 channels 0-7
 CHANNEL_EC: 1
 CHANNEL_PRESSURE: 2
 CHANNEL_TEMPERATURE: 3
@@ -10,19 +16,30 @@ PIN_DEPTH_TRIG: 4
 PIN_DEPTH_ECHO: 5
 
 # MSP3008 ADC chip
-# From chip top to bottom
+PIN_MISO: 19  # Din
+PIN_MOSI: 20  # Dout
 PIN_CLK: 21   # CLK
-PIN_MISO: 19  # Dout
-PIN_MOSI: 20  # Din
 PIN_CS: 26    # Channel select
 
 # Outputs
-PIN_PRESSURE_PUMP: 6
-PIN_PRESSURE_FLOW: 7
-PIN_EC_UP_PUMP: 8
-PIN_PH_DOWN_PUMP: 9
-PIN_WATER_FLOW: 10
-PIN_MIX_PUMP: 11
+# Relay channel:pin
+# 1: 14
+# 2: 15
+# 3: 18
+# 4: 23
+# 5: 24
+# 6: 25
+# 7: 7
+# 8: 1
+
+PIN_PRESSURE_PUMP: 14    # Ch. 1
+PIN_MIST_VALVE: 15       # Ch. 2
+PIN_NUTRIENT_PUMP: 18    # Ch. 3
+PIN_PH_DOWN_PUMP: 23     # Ch. 4
+PIN_MIX_PUMP: 24         # Ch. 5
+PIN_WATER_VALVE: 25      # Ch. 6
+SPARE_RELAY_PIN_A: 7     # Ch. 7
+SPARE_RELAY_PIN_B: 1     # Ch. 8
 
 # Parameters
 #-------------------------------------------------------------------------------
@@ -33,30 +50,46 @@ MIST_CYCLE_MINUTES: 5
 MIST_DURATION_SECONDS: 15
 MIX_PUMP_SECONDS: 60
 MIX_ADDITION_DELAY_SECONDS: 10
-MEDIAN_SAMPLE_DELAY_SECONDS: 0.01
-
-# Pressure monitoring
-MIN_PRESSURE: None
-MAX_PRESSURE: None
+WATER_ADDITION_SECONDS: 10
+WATER_MAX_ADDITION_SECONDS: 60
+MEDIAN_INTERVAL_SECONDS: 0.01
 QUIET_TIME_START: "20:00"
 QUIET_TIME_END: "07:00"
+
+# Pressure monitoring
+MIN_PRESSURE_PSI: 100
+MAX_PRESSURE_PSI: 140
+ALERT_PRESSURE_PSI: 90
 
 # PH monitoring
 PH_TARGET: 6.0
 PH_LIMIT_WARN: 0.5
 PH_LIMIT_DANGER: 1
 PH_ACTION_THRESHOLD: 0.25
+PH_ACTION_THRESHOLD: 10
 
 # EC monitoring
 EC_TARGET: 1.8
 EC_LIMIT_WARN: 0.4
 EC_LIMIT_DANGER: 1
 EC_ACTION_THRESHOLD: 0.2
+EC_ADDITION_SECONDS: 2
 
 # Water level monitoring
-DEPTH_UNIT: "mm"
-DEPTH_MAXIMUM_UNITS: None       # Units when full (e.g. 200mm)
-DEPTH_TARGET: 1.0               # Full
-DEPTH_LIMIT_WARN: 0.75          # 75%
+TANK_HEIGHT_MM: Null            # Total distance between head sensor and tank bottom (e.g. 225mm)
+DEPTH_MAXIMUM_MM: Null          # Depth units when full (e.g. 200mm)
+DEPTH_LIMIT_WARN: 0.75          # 75% full
 DEPTH_LIMIT_DANGER: 0.5
 DEPTH_ACTION_THRESHOLD: 0.75
+
+# Database connection
+#-------------------------------------------------------------------------------
+
+# Read live config from database (will override default config in this file)
+
+# DATABASE:
+#   - SQLITE_PATH: "db.sqlite"
+#   - CONFIG_TABLE_NAME: "dash_config"
+#   - CONFIG_KEY_FIELD: "key"
+#   - CONFIG_VALUE_FIELD: "value"
+#   - READINGS_TABLE_NAME: "dash_monitor"
