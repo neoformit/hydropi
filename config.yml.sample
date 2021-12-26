@@ -1,6 +1,6 @@
 # Environment
 #-------------------------------------------------------------------------------
-DEBUG: True
+DEBUG: True                  # Extra logging output
 CONFIG_DIR: '~/.hydropi'
 DAEMON_HTTP_PORT: 2021
 
@@ -8,7 +8,7 @@ DAEMON_HTTP_PORT: 2021
 #-------------------------------------------------------------------------------
 
 # Inputs
-CHANNEL_PH: 0        # MCP3008 channels 0-7
+CHANNEL_PH: 0                # MCP3008 channels 0-7
 CHANNEL_EC: 1
 CHANNEL_PRESSURE: 2
 CHANNEL_TEMPERATURE: 3
@@ -32,34 +32,34 @@ PIN_CS: 26    # Channel select
 # 7: 7
 # 8: 1
 
-PIN_PRESSURE_PUMP: 14    # Ch. 1
-PIN_MIST_VALVE: 15       # Ch. 2
-PIN_NUTRIENT_PUMP: 18    # Ch. 3
-PIN_PH_DOWN_PUMP: 23     # Ch. 4
-PIN_MIX_PUMP: 24         # Ch. 5
-PIN_WATER_VALVE: 25      # Ch. 6
-SPARE_RELAY_PIN_A: 7     # Ch. 7
-SPARE_RELAY_PIN_B: 1     # Ch. 8
+PIN_PRESSURE_PUMP: 14        # Ch. 1
+PIN_MIST_VALVE: 15           # Ch. 2
+PIN_NUTRIENT_PUMP: 18        # Ch. 3
+PIN_PH_DOWN_PUMP: 23         # Ch. 4
+PIN_MIX_PUMP: 24             # Ch. 5
+PIN_WATER_VALVE: 25          # Ch. 6
+SPARE_RELAY_PIN_A: 7         # Ch. 7
+SPARE_RELAY_PIN_B: 1         # Ch. 8
 
 # Parameters
 #-------------------------------------------------------------------------------
 
 # Timing
-SWEEP_CYCLE_MINUTES: 15
+SWEEP_CYCLE_MINUTES: 10
 MIST_CYCLE_MINUTES: 5
-MIST_DURATION_SECONDS: 15
+MIST_DURATION_SECONDS: 2
 MIX_PUMP_SECONDS: 60
 MIX_ADDITION_DELAY_SECONDS: 10
 WATER_ADDITION_SECONDS: 10
 WATER_MAX_ADDITION_SECONDS: 60
 MEDIAN_INTERVAL_SECONDS: 0.01
-QUIET_TIME_START: "20:00"
-QUIET_TIME_END: "07:00"
+QUIET_TIME_START: "20:00"        # HH:MM
+QUIET_TIME_END: "07:00"          # HH:MM
 
 # Pressure monitoring
-MIN_PRESSURE_PSI: 100
-MAX_PRESSURE_PSI: 140
-ALERT_PRESSURE_PSI: 90
+MIN_PRESSURE_PSI: 90
+MAX_PRESSURE_PSI: 120
+ALERT_PRESSURE_PSI: 70
 
 # PH monitoring
 PH_TARGET: 6.0
@@ -76,9 +76,9 @@ EC_ACTION_THRESHOLD: 0.2
 EC_ADDITION_SECONDS: 2
 
 # Water level monitoring
-TANK_HEIGHT_MM: Null            # Total distance between head sensor and tank bottom (e.g. 225mm)
-DEPTH_MAXIMUM_MM: Null          # Depth units when full (e.g. 200mm)
-DEPTH_LIMIT_WARN: 0.75          # 75% full
+TANK_HEIGHT_MM: Null             # Total distance between head sensor and tank bottom (e.g. 225mm)
+DEPTH_MAXIMUM_MM: Null           # Depth units when full (e.g. 200mm)
+DEPTH_LIMIT_WARN: 0.75           # 75% full
 DEPTH_LIMIT_DANGER: 0.5
 DEPTH_ACTION_THRESHOLD: 0.75
 
@@ -92,4 +92,4 @@ DEPTH_ACTION_THRESHOLD: 0.75
 #   - CONFIG_TABLE_NAME: "dash_config"
 #   - CONFIG_KEY_FIELD: "key"
 #   - CONFIG_VALUE_FIELD: "value"
-#   - READINGS_TABLE_NAME: "dash_monitor"
+#   - DATALOG_TABLE_NAME: "dash_history"

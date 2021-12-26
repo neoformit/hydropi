@@ -3,7 +3,7 @@
 from config import config
 
 from interfaces.sensors import thermometer
-from . import check
+from process import check
 
 
 def sweep():
@@ -15,4 +15,4 @@ def sweep():
         'pressure_psi': check.pressure.level(),
         'temp_c': thermometer.read(),
     }
-    config.db.write_stat(stat)
+    config.db.log_data(stat)

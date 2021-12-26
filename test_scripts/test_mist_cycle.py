@@ -9,7 +9,6 @@ from RPi import GPIO as io
 
 from config import config
 from process import check
-import process.check.pressure
 from process.delivery import mist
 
 

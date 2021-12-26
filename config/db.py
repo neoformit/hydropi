@@ -26,7 +26,7 @@ class DB:
         c = self.connection.cursor()
         return c.execute(sql_get_key(key))
 
-    def write_stat(self, data):
+    def log_data(self, data):
         """Write current readings to the database."""
         if not self.connection:
             logger.debug("DB.write_row: could not connect to SQLite database")
@@ -51,7 +51,7 @@ def sql_write_row(data):
     values = [x[1] for x in fields]
 
     return (
-        f"INSERT INTO {config.DATABASE.READINGS_TABLE_NAME}"
+        f"INSERT INTO {config.DATABASE.DATALOG_TABLE_NAME}"
         f" ({', '.join(columns)})"
         f" VALUES ({', '.join(values)});"
     )

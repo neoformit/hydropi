@@ -25,6 +25,7 @@ class AnalogueInterface:
     """Abstract interface for an analogue sensor input."""
 
     UNIT = None
+    DECIMAL_POINTS = 4
     VREF = 3.3
     V0_OFFSET = 0
     MIN_UNITS = None
@@ -34,9 +35,9 @@ class AnalogueInterface:
     MEDIAN_INTERVAL_SECONDS = None
 
     def __init__(self, channel):
-        """Build interface to MCP3008 chip.
+        """Create interface for the MCP3008 analogue converter chip.
 
-        Pass the required channel and request readings with ai.read().
+        Pass the required channel and request readings with interface.read().
         """
         self.CHANNEL = channel
         self.mcp = MCP3008(
@@ -83,7 +84,8 @@ class AnalogueInterface:
         else:
             r = self.read_median(n)
         logger.debug(
-            f"{type(self).__name__} READ: {round(r, 4)} {self.UNIT} (n={n})")
+            f"{type(self).__name__}"
+            f" READ: {round(r, self.DECIMAL_POINTS)} {self.UNIT} (n={n})")
         return round(r, 4)
 
     def read_median(self, n):
@@ -100,5 +102,5 @@ class AnalogueInterface:
         logger.info("~~~~~~ Press CTRL+C to end test ~~~~~~")
         time.sleep(1)
         while True:
-            logger.info(f"READING: {self.value} {self.UNIT}")
+            logger.info(f"READING: {self.read()} {self.UNIT}")
             time.sleep(0.5)
