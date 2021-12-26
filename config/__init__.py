@@ -54,13 +54,14 @@ class Config:
     def update(self, new):
         """Update config from dict.
 
-        Will only create new attributes, only update existing.
+        Do not set new attributes, only update existing.
         """
         for k, v in new.items():
             if hasattr(self, k):
                 setattr(self, k, v)
             else:
-                logger.warning(f"Trying to set invalid config key {k}")
+                logger.warning(
+                    f"Trying to set unreferenced config attribute {k}")
 
     def update_from_db(self):
         """Read in config from database connection."""
