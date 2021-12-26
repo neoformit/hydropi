@@ -3,7 +3,6 @@
 Listen for instructions from other processes.
 """
 
-import json
 from socket import (
     socket,
     AF_INET,
@@ -11,7 +10,6 @@ from socket import (
     SO_REUSEADDR,
     SOL_SOCKET
 )
-from requests import Response
 
 from config import config
 from . import routes
@@ -23,7 +21,7 @@ CONNECTION_MAX_BACKLOG = 1
 
 
 def listen():
-    """Listen for requests."""
+    """Handle incoming requests."""
     with socket(AF_INET, SOCK_STREAM) as sock:
         sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, SOCKET_OPT_VALUE)
         sock.bind((HOST, PORT))
@@ -33,33 +31,42 @@ def listen():
                 client, address = sock.accept()
                 request = client.recv(BUFFER_MAX_BYTES).decode()
                 method, path = request.split('\r\n')[0].split(' ')[:2]
-                print(f"METHOD: {method}")
-                print(f"PATH: {path}")
-                # data = routes.resolve(method, path)
-                # client.sendall(response_success(data))
+                print(f"REQUEST METHOD: {method}")
+                print(f"REQUEST PATH: {path}")
+                response = routes.resolve(method, path)
+                client.sendall(response_success(response))
             except Exception as exc:
                 client.sendall(response_error(exc))
             finally:
                 client.close()
 
 
-def response_success(status=None, data=None):
+def response_success(response):
     """Render HTTP error response from exception."""
-    r = Response()
-    r.code = "Server error"
-    r.status_code = status or 500
-    r._content = (json.dumps(data) or '').encode()
-    return r
+    print("RESPONSE SUCCESS")
+    code = "OK"
+    http_response = (
+        f"HTTP/1.1 {response.status} {code}\n"
+        "Content-Type: application/json\n\n"
+        f"{response.content}\n"
+    )
+    print(f"Response:\n{http_response}")
+    return bytes(http_response, 'utf-8')
 
 
 def response_error(exc=None):
     """Render HTTP error response from exception."""
     if exc:
-        content = f"{exc.__class__}: {exc}"
+        content = f"{exc.__class__.__name__}: {exc}"
     else:
-        content = "Server error"
-    r = Response()
-    r.code = "Server error"
-    r.status_code = getattr(exc, 'status', None) or 500
-    r._content = content.encode()
-    return r
+        content = "Server Error"
+    print(f"RESPONSE ERROR:\n{content}")
+    code = "Server error"
+    status_code = getattr(exc, 'status', 500)
+    response = (
+        f"HTTP/1.1 {status_code} {code}\n"
+        "Content-Type: text/plain\n\n"
+        f"{content}\n"
+    )
+    print(f"Response:\n{response}")
+    return bytes(response, 'utf-8')
