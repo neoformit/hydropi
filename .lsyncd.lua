@@ -1,3 +1,7 @@
+-- $ sudo apt install lsyncd
+-- $ ./sync  # One-way sync to remote
+
+
 -- Add sync config here
 
 HOST     = "raspberrypi.local"
