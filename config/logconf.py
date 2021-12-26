@@ -1,5 +1,6 @@
 """Logging configuration."""
 
+import os
 import logging
 import logging.config
 
@@ -14,8 +15,9 @@ def configure(config):
         'disable_existing_loggers': True,
         'formatters': {
             'standard': {
-                'format': '{levelname} | {asctime} | {module}: {message}',
+                'format': '%(levelname)5s | {asctime} | %(module)12s: {message}',
                 'style': '{',
+                'datefmt': '%Y-%m-%d %H:%M:%S',
             },
         },
         'handlers': {
@@ -25,7 +27,8 @@ def configure(config):
                 'class': 'logging.handlers.RotatingFileHandler',
                 'maxBytes': 1000000,  # 1MB ~ 20k rows
                 'backupCount': 5,
-                'filename': 'hydro.log',
+                'filename': os.path.join(config.CONFIG_DIR, 'hydro.log'),
+                'mode': 'a',
                 'formatter': 'standard',
             },
             'console': {

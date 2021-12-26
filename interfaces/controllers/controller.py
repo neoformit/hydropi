@@ -28,14 +28,12 @@ class AbstractController:
         """Initialize interface."""
         if self.PIN is None:
             raise ValueError(
-                "Controller inheriting from AbstractController must set PIN to"
+                "Subclass of AbstractController must set self.PIN to"
                 " a valid output pin.")
         self.ID = random_string()
         self.state = self.OFF
-        self.claim_ownership()
-        io.setmode(io.BCM)
-        io.setup(self.PIN, io.OUT)
-        io.output(self.PIN, self.state)
+        self._claim_ownership()
+        self._set_state(self.ON)
 
     def __del__(self):
         """Clean up on delete."""
@@ -43,28 +41,32 @@ class AbstractController:
 
     def on(self):
         """Activate the device."""
-        self.state = self.ON
         logger.debug(
-            f"{type(self).__name__}: switch output state to {self.state}")
-        io.output(self.PIN, self.state)
+            f"{type(self).__name__}: switch output state to {self.state}:ON")
+        self._set_state(self.ON)
 
     def off(self):
         """Deactivate the device."""
-        if not self.has_ownership():
+        if not self._has_ownership():
             return
-        self.state = self.OFF
         logger.debug(
-            f"{type(self).__name__}: switch output state to {self.state}")
-        io.output(self.PIN, self.state)
+            f"{type(self).__name__}: switch output state to {self.state}:OFF")
+        self._set_state(self.OFF)
 
-    def claim_ownership(self):
+    def _set_state(self, state):
+        """Change the state of the controller."""
+        io.setmode(io.BCM)
+        io.setup(self.PIN, io.OUT)
+        io.output(self.PIN, state)
+
+    def _claim_ownership(self):
         """Claim ownership of this interface."""
-        with open(self.deed, 'w') as f:
+        with open(self._deed, 'w') as f:
             f.write(self.ID)
 
-    def has_ownership(self):
+    def _has_ownership(self):
         """Figure out whether self is present owner of this interface."""
-        with open(self.deed) as f:
+        with open(self._deed) as f:
             is_owner = self.ID == f.read().strip('\n ')
         if not is_owner:
             logger.warning(
@@ -73,7 +75,7 @@ class AbstractController:
         return is_owner
 
     @property
-    def deed(self):
+    def _deed(self):
         """Return filepath of deed."""
         path = os.path.join(config.TEMP_DIR, f"{type(self).__name__}.deed")
         if not os.path.exists(os.path.dirname(path)):

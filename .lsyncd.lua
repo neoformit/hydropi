@@ -5,7 +5,7 @@ USER     = "pi"             -- Remote user
 SRC_DIR  = "/home/cameron/dev/hydropi/"   -- Trailing slash syncs dir contents only
 DEST_DIR = "/home/pi/hydro/hydropi"
 RSA_KEY  = "~/.ssh/neoform.pem"
-EXCLUDE  = { '.git' , 'sync', '.lsyncd.lua' }
+EXCLUDE  = { '.git' , 'sync', '.lsyncd.lua', 'nohup.out', '*.log'}
 
 
 -- Shouldn't need to touch this:

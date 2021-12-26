@@ -11,10 +11,9 @@ logger = logging.getLogger(__name__)
 
 def mist():
     """Periodically release nutrient mist."""
+    mc = MistController()
     while True:
         logger.debug(f"ACTION: MIST {config.MIST_DURATION_SECONDS} SECONDS")
-        # Threaded MC seems to break if re-used between cycles
-        mc = MistController()
         mc.on()
         time.sleep(config.MIST_DURATION_SECONDS)
         mc.off()
