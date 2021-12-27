@@ -1,10 +1,10 @@
 """Check if quiet time."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from config import config
 
 
-def is_quiet_time():
+def is_quiet_time(within_minutes=0):
     """Check whether we are currently in quiet time."""
     now = datetime.now()
     today = now.strftime("%Y-%m-%d")
@@ -12,6 +12,9 @@ def is_quiet_time():
         f'{today} {config.QUIET_TIME_START}', "%Y-%m-%d %H:%M")
     quiet_end = datetime.strptime(
         f'{today} {config.QUIET_TIME_END}', "%Y-%m-%d %H:%M")
-    if now > quiet_start or now < quiet_end:
-        return True
-    return False
+
+    if within_minutes:
+        # Calculate whether quiet time starts within X minutes
+        quiet_start -= timedelta(minutes=within_minutes)
+
+    return now > quiet_start or now < quiet_end

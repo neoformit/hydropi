@@ -33,12 +33,13 @@ class PressurePumpController(AbstractController):
                 * (config.MAX_PRESSURE_PSI - psi)
                 / (config.MAX_PRESSURE_PSI - config.MIN_PRESSURE_PSI)
             ) + 5  # Extra 5 seconds ensures that MAX is always reached
-            print(f"Current pressure: {psi}PSI")
+            print(f"Current pressure: {psi} {PressureSensor.UNIT}")
             print(f"Next duration: {duration} seconds")
             return psi, duration
 
         logger.info(
-            f"ACTION: restore system pressure to {config.MAX_PRESSURE_PSI}")
+            "ACTION: restore system pressure to"
+            f" {config.MAX_PRESSURE_PSI} {PressureSensor.UNIT}")
 
         cumulative_duration = 0
         psi, duration = _next_duration()
@@ -49,6 +50,8 @@ class PressurePumpController(AbstractController):
             cumulative_duration += duration
             time.sleep(2)
             psi, duration = _next_duration()
+            logger.info(
+                f"Refill paused at {psi} {PressureSensor.UNIT}.")
 
         logger.info(
             f"System pressure restored to {psi} {PressureSensor.UNIT}"

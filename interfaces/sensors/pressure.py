@@ -13,7 +13,7 @@ class PressureSensor(AnalogueInterface):
     """
 
     TEXT = 'Pressure'
-    UNIT = 'psi'
+    UNIT = 'PSI'
     MIN_UNITS = 0
     MAX_UNITS = 175
     MIN_VOLTS = 0.3
