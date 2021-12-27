@@ -25,7 +25,7 @@ def main():
     """Monitor and maintain the system."""
     try:
         Thread(target=mist).start()
-        Thread(target=sweep).start()
+        sweep()
     finally:
         io.cleanup()
 
@@ -57,11 +57,8 @@ def test(component):
 
 
 if __name__ == '__main__':
-    try:
-        args = get_args()
-        if args.test_component:
-            test(args.test_component)
-        else:
-            main()
-    finally:
-        io.cleanup()
+    args = get_args()
+    if args.test_component:
+        test(args.test_component)
+    else:
+        main()
