@@ -15,4 +15,5 @@ def sweep():
         'pressure_psi': check.pressure.level(),
         'temp_c': thermometer.read(),
     }
-    config.db.log_data(stat)
+    if config.db:
+        config.db.log_data(stat)
