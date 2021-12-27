@@ -24,15 +24,25 @@ logger = logging.getLogger(__name__)
 class AnalogueInterface:
     """Abstract interface for an analogue sensor input."""
 
+    TEXT = None
     UNIT = None
     DECIMAL_POINTS = 4
+    MEDIAN_INTERVAL_SECONDS = None
+
+    # Sensor calibration params
     VREF = 3.3
     V0_OFFSET = 0
     MIN_UNITS = None
     MAX_UNITS = None
     MIN_VOLTS = None
     MAX_VOLTS = None
-    MEDIAN_INTERVAL_SECONDS = None
+
+    class STATUS:
+        """Status options."""
+
+        NORMAL = 'normal'
+        WARNING = 'warning'
+        DANGER = 'danger'
 
     def __init__(self, channel):
         """Create interface for the MCP3008 analogue converter chip.
@@ -43,6 +53,7 @@ class AnalogueInterface:
         if not getattr(self, 'MEDIAN_INTERVAL_SECONDS'):
             self.MEDIAN_INTERVAL_SECONDS = config.MEDIAN_INTERVAL_SECONDS
         for attr in (
+                'TEXT',
                 'UNIT',
                 'MIN_UNITS',
                 'MAX_UNITS',
@@ -67,8 +78,6 @@ class AnalogueInterface:
     @property
     def value(self):
         """Calculate current channel reading."""
-        ref_range = self.MAX_VOLTS - self.MIN_VOLTS
-
         try:
             # Sometimes RPi 'forgets' the pin IO state
             bits = self.mcp.read_adc(self.CHANNEL)
@@ -81,6 +90,7 @@ class AnalogueInterface:
         logger.debug(f"READ VOLTS: {round(volts, 6)}")
         volts_offset = volts + self.V0_OFFSET
         logger.debug(f"READ VOLTS OFFSET: {round(volts_offset, 6)}")
+        ref_range = self.MAX_VOLTS - self.MIN_VOLTS
         fraction = (volts_offset - self.MIN_VOLTS) / ref_range
         return fraction * self.MAX_UNITS
 
@@ -90,19 +100,36 @@ class AnalogueInterface:
         if n == 1:
             r = self.value
         else:
-            r = self.read_median(n)
+            r = self._read_median(n)
         logger.debug(
             f"{type(self).__name__}"
             f" READ: {round(r, self.DECIMAL_POINTS)} {self.UNIT} (n={n})")
         return round(r, 4)
 
-    def read_median(self, n):
+    def _read_median(self, n):
         """Return median channel reading from <n> samples."""
         readings = []
         for i in range(n):
             readings.append(self.value)
             time.sleep(self.MEDIAN_INTERVAL_SECONDS)
         return statistics.median(readings)
+
+    @classmethod
+    def get_status(cls):
+        """Create interface and return current status data."""
+        sensor = cls()
+        current = sensor.read(n=5)
+        percent = round(
+            (cls.MAX_UNITS - current) / (cls.MAX_UNITS - cls.MIN_UNITS),
+            4
+        )
+        return {
+            'text': cls.TEXT,
+            'status': cls.get_status_text(current),
+            'value': current,
+            'percent': percent,
+            'unit': cls.UNIT,
+        }
 
     def test(self):
         """Test channel readings."""

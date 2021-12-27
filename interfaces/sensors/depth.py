@@ -70,6 +70,10 @@ class DepthSensor:
         logger.debug(f"{type(self).__name__} READ: {r} {self.UNIT} (n={n})")
         return r
 
+    def get_status_text(self, value):
+        """Return appropriate status text for given value."""
+        return None
+
     def full(self):
         """Check whether tank is full and return Boolean."""
         stat = self.read(n=5)

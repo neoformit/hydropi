@@ -10,6 +10,7 @@ class ECSensor(AnalogueInterface):
     Call .read() to get conductivity in mS.
     """
 
+    TEXT = 'EC'
     UNIT = 'mS'
     MIN_UNITS = 0
     MAX_UNITS = 1562
@@ -20,3 +21,7 @@ class ECSensor(AnalogueInterface):
     def __init__(self):
         """Initialise interface."""
         super().__init__(config.CHANNEL_EC)
+
+    def get_status_text(self, value):
+        """Return appropriate status text for given value."""
+        return None
