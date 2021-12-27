@@ -3,7 +3,7 @@
 import logging
 from threading import Thread
 
-import notifications
+# import notifications
 from config import config
 from process.check.time import is_quiet_time
 from interfaces.sensors.pressure import PressureSensor
@@ -18,12 +18,15 @@ def level():
     stat = sensor.read(n=5)
     logger.info(f"READ pressure: {stat} {sensor.UNIT}")
 
-    if stat < config.ALERT_PRESSURE_PSI:
+    if stat < config.MIN_PRESSURE_PSI - config.PRESSURE_DANGER_PSI:
         message = f"Tank pressure below ALERT level: {stat} {sensor.UNIT}"
         logger.warning(message)
-        notifications.alert(message)
-
-    if stat > config.MIN_PRESSURE_PSI:
+        # notifications.alert(message)
+    if stat > config.MAX_PRESSURE_PSI + config.PRESSURE_DANGER_PSI:
+        message = f"Tank pressure above ALERT level: {stat} {sensor.UNIT}"
+        logger.warning(message)
+        # notifications.alert(message)
+    elif stat > config.MIN_PRESSURE_PSI:
         logger.debug(
             "Tank pressure above lower limit of"
             f" {config.MIN_PRESSURE_PSI} {sensor.UNIT}"

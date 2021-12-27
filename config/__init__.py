@@ -13,6 +13,7 @@ properly.
 
 import os
 import yaml
+import shutil
 import logging
 
 from .db import DB
@@ -44,12 +45,6 @@ class Config:
             config['CONFIG_DIR'] = os.path.expanduser(config['CONFIG_DIR'])
         config['TEMP_DIR'] = os.path.join(config['CONFIG_DIR'], 'tmp')
         return config
-
-    def build_dirs(self, dirs):
-        """Create missing directories."""
-        for d in dirs:
-            if not os.path.exists(d):
-                os.mkdir(d)
 
     def update(self, new):
         """Update config from dict.
@@ -86,3 +81,6 @@ config = Config('config.yml')
 # Build dirs
 if not os.path.exists(config.CONFIG_DIR):
     os.makedirs(config.CONFIG_DIR)
+if os.path.exists(config.TEMP_DIR):
+    shutil.rmtree(config.TEMP_DIR)
+    os.mkdir(config.TEMP_DIR)

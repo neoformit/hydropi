@@ -14,6 +14,7 @@ from threading import Thread
 from argparse import ArgumentParser
 from importlib import import_module
 
+import interfaces
 from process.delivery import mist
 from process.maintenance import sweep
 
@@ -28,6 +29,7 @@ def main():
         sweep()
     finally:
         io.cleanup()
+        interfaces.cleanup()
 
 
 def get_args():

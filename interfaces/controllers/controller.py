@@ -31,8 +31,14 @@ class AbstractController:
                 "Subclass of AbstractController must set self.PIN to"
                 " a valid output pin.")
         self.ID = ''.join(random.choices(string.ascii_lowercase, k=12))
-        self._claim_ownership()
         self._set_state(self.OFF)
+
+    @classmethod
+    def cleanup(cls):
+        """Clean up on deletion."""
+        deed = cls()._deed
+        if os.path.exists(deed):
+            os.remove(deed)
 
     def on(self):
         """Activate the device."""
@@ -43,13 +49,10 @@ class AbstractController:
 
     def off(self):
         """Deactivate the device."""
-        if not self._has_ownership():
-            return
-        is_shared = self._revoke_ownership()
-        if is_shared:
+        if self._revoke_ownership():
             logger.info(
                 f"{type(self).__name__}:"
-                " OWNERSHIP REVOKED: state has been delegated to shared owner")
+                " OWNERSHIP REVOKED: state delegated to shared owner")
             return
         logger.info(
             f"{type(self).__name__}: switch output state to {self.OFF}:OFF")
@@ -62,18 +65,28 @@ class AbstractController:
         io.setup(self.PIN, io.OUT)
         io.output(self.PIN, state)
 
+    def _get_owners(self):
+        """Return list of owners of this interface."""
+        if not os.path.exists(self._deed):
+            return []
+        with open(self._deed) as f:
+            return [x for x in f.read().split('\n') if x]
+
     def _claim_ownership(self):
         """Claim ownership of this interface by writing a deed."""
-        with open(self._deed, 'a') as f:
-            f.write(self.ID + '\n')
+        if self.ID not in self._get_owners():
+            logger.debug(f'Claim {self._deed} for ID {self.ID}')
+            with open(self._deed, 'a') as f:
+                f.write(self.ID + '\n')
 
     def _revoke_ownership(self):
         """Revoke ownership of this interface from the deed."""
-        with open(self._deed) as f:
-            owners = [x for x in f.read().split('\n') if x]
+        logger.debug(f'Remove ID {self.ID} from {self._deed}')
+        owners = self._get_owners()
         owners.remove(self.ID)
 
         if owners:
+            logger.debug(f'Owners: {owners}')
             with open(self._deed, 'w') as f:
                 f.write('\n'.join(owners) + '\n')
             return True
@@ -82,11 +95,8 @@ class AbstractController:
 
     @property
     def _deed(self):
-        """Return filepath of deed."""
-        path = os.path.join(config.TEMP_DIR, f"{type(self).__name__}.deed")
-        if not os.path.exists(os.path.dirname(path)):
-            os.mkdir(os.path.dirname(path))
-        return path
+        """Return filepath of the deed to this interface."""
+        return os.path.join(config.TEMP_DIR, f"{type(self).__name__}.deed")
 
     def test(self):
         """Test the controller."""
