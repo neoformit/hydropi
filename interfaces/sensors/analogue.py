@@ -55,10 +55,6 @@ class AnalogueInterface:
             logger.warning("No V0_OFFSET set: consider zeroing this device.")
         self._setup()
 
-    def __del__(self):
-        """Clean up on delete."""
-        io.cleanup()
-
     def _setup(self):
         """Create interface to MCP3008 chip."""
         self.mcp = MCP3008(

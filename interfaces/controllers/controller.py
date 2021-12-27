@@ -22,7 +22,7 @@ class AbstractController:
     # Yes, how strange that low is 'on' for this relay board...
     ON = 0      # GPIO low
     OFF = 1     # GPIO high
-    PIN = None  # Must be set
+    PIN = None  # Must be set in subclass
 
     def __init__(self):
         """Initialize interface."""
@@ -30,25 +30,28 @@ class AbstractController:
             raise ValueError(
                 "Subclass of AbstractController must set self.PIN to"
                 " a valid output pin.")
-        self.ID = random_string()
+        self.ID = ''.join(random.choices(string.ascii_lowercase, k=12))
         self._claim_ownership()
         self._set_state(self.OFF)
 
-    def __del__(self):
-        """Clean up on delete."""
-        io.cleanup()
-
     def on(self):
         """Activate the device."""
-        logger.debug(
+        logger.info(
             f"{type(self).__name__}: switch output state to {self.ON}:ON")
         self._set_state(self.ON)
+        self._claim_ownership()
 
     def off(self):
         """Deactivate the device."""
         if not self._has_ownership():
             return
-        logger.debug(
+        is_shared = self._revoke_ownership()
+        if is_shared:
+            logger.info(
+                f"{type(self).__name__}:"
+                " OWNERSHIP REVOKED: state has been delegated to shared owner")
+            return
+        logger.info(
             f"{type(self).__name__}: switch output state to {self.OFF}:OFF")
         self._set_state(self.OFF)
 
@@ -60,19 +63,22 @@ class AbstractController:
         io.output(self.PIN, state)
 
     def _claim_ownership(self):
-        """Claim ownership of this interface."""
-        with open(self._deed, 'w') as f:
-            f.write(self.ID)
+        """Claim ownership of this interface by writing a deed."""
+        with open(self._deed, 'a') as f:
+            f.write(self.ID + '\n')
 
-    def _has_ownership(self):
-        """Figure out whether self is present owner of this interface."""
+    def _revoke_ownership(self):
+        """Revoke ownership of this interface from the deed."""
         with open(self._deed) as f:
-            is_owner = self.ID == f.read().strip('\n ')
-        if not is_owner:
-            logger.warning(
-                type(self).__name__
-                + ": OWNERSHIP REVOKED: cannot switch state")
-        return is_owner
+            owners = [x for x in f.read().split('\n') if x]
+        owners.remove(self.ID)
+
+        if owners:
+            with open(self._deed, 'w') as f:
+                f.write('\n'.join(owners) + '\n')
+            return True
+        os.remove(self._deed)
+        return False
 
     @property
     def _deed(self):
@@ -94,8 +100,3 @@ class AbstractController:
             logger.info("SWITCH OFF")
             self.off()
             time.sleep(3)
-
-
-def random_string():
-    """Return a random ID."""
-    return ''.join(random.choices(string.ascii_lowercase, k=12))
