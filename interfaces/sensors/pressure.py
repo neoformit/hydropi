@@ -14,7 +14,7 @@ class PressureSensor(AnalogueInterface):
 
     UNIT = 'psi'
     MIN_UNITS = 0
-    MAX_UNITS = 200
+    MAX_UNITS = 175
     MIN_VOLTS = 0.3
     MAX_VOLTS = 3.3
     V0_OFFSET = -0.006152

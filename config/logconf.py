@@ -15,9 +15,9 @@ def configure(config):
         'disable_existing_loggers': True,
         'formatters': {
             'standard': {
-                'format': '%(levelname)5s | {asctime} | %(module)12s: {message}',
-                'style': '{',
+                'format': '%(levelname)5s | %(asctime)s | %(module)12s: %(message)s',
                 'datefmt': '%Y-%m-%d %H:%M:%S',
+                'style': "%",
             },
         },
         'handlers': {

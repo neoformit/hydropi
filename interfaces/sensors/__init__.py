@@ -1,4 +1,4 @@
-"""Provide an interface for sensors."""
+"""Provide a set of interfaces for sensors."""
 
 from .ph import PHSensor
 from .ec import ECSensor

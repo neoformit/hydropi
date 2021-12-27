@@ -5,7 +5,7 @@ from threading import Thread
 
 from config import config
 from interfaces.sensors.ec import ECSensor
-from interfaces.controller.ec import ECController
+from interfaces.controllers.ec import ECController
 
 logger = logging.getLogger(__name__)
 

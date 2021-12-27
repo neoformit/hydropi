@@ -31,9 +31,8 @@ class AbstractController:
                 "Subclass of AbstractController must set self.PIN to"
                 " a valid output pin.")
         self.ID = random_string()
-        self.state = self.OFF
         self._claim_ownership()
-        self._set_state(self.ON)
+        self._set_state(self.OFF)
 
     def __del__(self):
         """Clean up on delete."""
@@ -42,7 +41,7 @@ class AbstractController:
     def on(self):
         """Activate the device."""
         logger.debug(
-            f"{type(self).__name__}: switch output state to {self.state}:ON")
+            f"{type(self).__name__}: switch output state to {self.ON}:ON")
         self._set_state(self.ON)
 
     def off(self):
@@ -50,11 +49,12 @@ class AbstractController:
         if not self._has_ownership():
             return
         logger.debug(
-            f"{type(self).__name__}: switch output state to {self.state}:OFF")
+            f"{type(self).__name__}: switch output state to {self.OFF}:OFF")
         self._set_state(self.OFF)
 
     def _set_state(self, state):
         """Change the state of the controller."""
+        self.state = state
         io.setmode(io.BCM)
         io.setup(self.PIN, io.OUT)
         io.output(self.PIN, state)

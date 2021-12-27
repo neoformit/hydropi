@@ -5,7 +5,7 @@ from threading import Thread
 
 from config import config
 from interfaces.sensors.depth import DepthSensor
-from interfaces.controller.water import WaterController
+from interfaces.controllers.water import WaterController
 
 logger = logging.getLogger(__name__)
 

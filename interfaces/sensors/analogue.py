@@ -40,12 +40,6 @@ class AnalogueInterface:
         Pass the required channel and request readings with interface.read().
         """
         self.CHANNEL = channel
-        self.mcp = MCP3008(
-            cs=config.PIN_CS,
-            miso=config.PIN_MISO,
-            mosi=config.PIN_MOSI,
-            clk=config.PIN_CLK,
-        )
         if not getattr(self, 'MEDIAN_INTERVAL_SECONDS'):
             self.MEDIAN_INTERVAL_SECONDS = config.MEDIAN_INTERVAL_SECONDS
         for attr in (
@@ -59,16 +53,33 @@ class AnalogueInterface:
                     f"AnalogueInterface must define '{attr}'")
         if not self.V0_OFFSET:
             logger.warning("No V0_OFFSET set: consider zeroing this device.")
+        self._setup()
 
     def __del__(self):
         """Clean up on delete."""
         io.cleanup()
 
+    def _setup(self):
+        """Create interface to MCP3008 chip."""
+        self.mcp = MCP3008(
+            cs=config.PIN_CS,
+            miso=config.PIN_MISO,
+            mosi=config.PIN_MOSI,
+            clk=config.PIN_CLK,
+        )
+
     @property
     def value(self):
         """Calculate current channel reading."""
         ref_range = self.MAX_VOLTS - self.MIN_VOLTS
-        bits = self.mcp.read_adc(self.CHANNEL)
+
+        try:
+            # Sometimes RPi 'forgets' the pin IO state
+            bits = self.mcp.read_adc(self.CHANNEL)
+        except RuntimeError:
+            self._setup()
+            bits = self.mcp.read_adc(self.CHANNEL)
+
         logger.debug(f"READ BITS: {bits}")
         volts = self.VREF * bits / 1024
         logger.debug(f"READ VOLTS: {round(volts, 6)}")
@@ -79,6 +90,7 @@ class AnalogueInterface:
 
     def read(self, n=1):
         """Return channel reading."""
+        self._setup()
         if n == 1:
             r = self.value
         else:

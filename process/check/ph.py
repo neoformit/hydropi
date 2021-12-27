@@ -5,7 +5,7 @@ from threading import Thread
 
 from config import config
 from interfaces.sensors.ph import PHSensor
-from interfaces.controller.ph import PHController
+from interfaces.controllers.ph import PHController
 
 logger = logging.getLogger(__name__)
 

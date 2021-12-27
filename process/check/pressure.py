@@ -1,11 +1,11 @@
 """Check the nutrient pressure tank level and adjust with pressure pump."""
 
-import time
 import logging
 from threading import Thread
 
 import notifications
 from config import config
+from process.check.time import is_quiet_time
 from interfaces.sensors.pressure import PressureSensor
 from interfaces.controllers.pressure import PressurePumpController
 
@@ -41,15 +41,5 @@ def restore(stat):
 
     logger.info("Tank pressure low: restoring pressure.")
     pump = PressurePumpController()
-    Thread(pump.refill).start()
+    Thread(target=pump.refill).start()
     return stat
-
-
-def is_quiet_time():
-    """Check whether we are currently in quiet time."""
-    now = time.now()
-    quiet_start = time.strptime("%H:%M", config.QUIET_TIME_START)
-    quiet_end = time.strptime(config.QUIET_TIME_END)
-    if now > quiet_start or now < quiet_end:
-        return True
-    return False
