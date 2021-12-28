@@ -52,7 +52,8 @@ class AbstractController:
         if self._revoke_ownership():
             logger.info(
                 f"{type(self).__name__}:"
-                " OWNERSHIP REVOKED: state delegated to shared owner")
+                " OWNERSHIP REVOKED FROM SHARED INTERFACE: ownership has been"
+                " delegated")
             return
         logger.info(
             f"{type(self).__name__}: switch output state to {self.OFF}:OFF")
@@ -67,36 +68,44 @@ class AbstractController:
 
     def _get_owners(self):
         """Return list of owners of this interface."""
-        if not os.path.exists(self._deed):
+        if not os.path.exists(self._deed_dir):
             return []
-        with open(self._deed) as f:
-            return [x for x in f.read().split('\n') if x]
+        return os.listdir(self._deed_dir)
 
     def _claim_ownership(self):
         """Claim ownership of this interface by writing a deed."""
         if self.ID not in self._get_owners():
-            logger.debug(f'Claim {self._deed} for ID {self.ID}')
-            with open(self._deed, 'a') as f:
-                f.write(self.ID + '\n')
+            logger.debug(f'Writing deed for ID {self.ID}: {self._deed}')
+            with open(self._deed, 'w'):
+                pass
 
     def _revoke_ownership(self):
         """Revoke ownership of this interface from the deed."""
-        logger.debug(f'Remove ID {self.ID} from {self._deed}')
+        logger.debug(f'Revoke deed for {self.ID}')
         owners = self._get_owners()
-        owners.remove(self.ID)
-
+        try:
+            owners.remove(self.ID)
+            os.remove(self._deed)
+        except ValueError:
+            # Somehow not an owner... but that's ok we're revoking anyways
+            pass
         if owners:
-            logger.debug(f'Owners: {owners}')
-            with open(self._deed, 'w') as f:
-                f.write('\n'.join(owners) + '\n')
+            logger.debug(f'Remaining owners: {owners}')
             return True
-        os.remove(self._deed)
         return False
 
     @property
+    def _deed_dir(self):
+        """Return path of the deed directory for this interface."""
+        path = os.path.join(config.TEMP_DIR, 'deeds', f"{type(self).__name__}")
+        if not os.path.exists(path):
+            os.makedirs(path)
+        return path
+
+    @property
     def _deed(self):
-        """Return filepath of the deed to this interface."""
-        return os.path.join(config.TEMP_DIR, f"{type(self).__name__}.deed")
+        """Return path of the deed directory for this interface."""
+        return os.path.join(self._deed_dir, f"{self.ID}")
 
     def test(self):
         """Test the controller."""
