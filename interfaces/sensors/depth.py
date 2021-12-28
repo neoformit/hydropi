@@ -67,7 +67,7 @@ class DepthSensor:
             readings.append(self.read())
             time.sleep(config.MEDIAN_SAMPLE_DELAY_SECONDS)
         r = statistics.median(readings)
-        logger.debug(f"{type(self).__name__} READ: {r} {self.UNIT} (n={n})")
+        logger.debug(f"{type(self).__name__} READ: {r}{self.UNIT} (n={n})")
         return r
 
     def get_status_text(self, value):

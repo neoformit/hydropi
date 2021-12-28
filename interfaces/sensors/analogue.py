@@ -2,7 +2,18 @@
 
 https://learn.adafruit.com/raspberry-pi-analog-to-digital-converters/mcp3008
 
-Not recommended library (deprecated) but the recommended one didn't work!
+Required attributes:
+--------------------
+CHANNEL     | Relay channel to operate (zero-indexed)
+TEXT        | Display text for sensor e.g. "temperature"
+UNIT        | Units of measurement e.g. "°C"
+MIN_UNITS   | Min units sensor can measure - often zero
+MAX_UNITS   | Max units sensor can measure e.g. 100
+MIN_VOLTS   | Voltage output at minimum reading
+MAX_VOLTS   | Voltage output at maximum reading, often 3.3v
+RANGE_LOWER | Lower limital of optimal range
+RANGE_UPPER | Upper limital of optimal range
+DANGER_DIFF | Danger zone variance from optimal range
 
 """
 
@@ -21,12 +32,18 @@ from config import config
 logger = logging.getLogger(__name__)
 
 
+class STATUS:
+    """Status options."""
+
+    NORMAL = 'normal'
+    WARNING = 'warning'
+    DANGER = 'danger'
+
+
 class AnalogueInterface:
     """Abstract interface for an analogue sensor input."""
 
-    TEXT = None
-    UNIT = None
-    DECIMAL_POINTS = 4
+    DECIMAL_POINTS = 4  # Set to None for integer
     MEDIAN_INTERVAL_SECONDS = None
 
     # Sensor calibration params
@@ -37,37 +54,46 @@ class AnalogueInterface:
     MIN_VOLTS = None
     MAX_VOLTS = None
 
-    class STATUS:
-        """Status options."""
+    REQUIRED_ATTRIBUTES = (
+        'CHANNEL',      # Relay channel to operate (zero-indexed)
+        'TEXT',         # Display text for sensor e.g. "temperature"
+        'UNIT',         # Units of measurement e.g. °C (may prefix with space)
+        'MIN_UNITS',    # Min units sensor can measure - often zero
+        'MAX_UNITS',    # Max units sensor can measure e.g. 100
+        'MIN_VOLTS',    # Voltage output at minimum reading
+        'MAX_VOLTS',    # Voltage output at maximum reading, often 3.3v
+        'RANGE_LOWER',  # Lower limital of optimal range
+        'RANGE_UPPER',  # Upper limital of optimal range
+    )
 
-        NORMAL = 'normal'
-        WARNING = 'warning'
-        DANGER = 'danger'
-
-    def __init__(self, channel):
+    def __init__(self):
         """Create interface for the MCP3008 analogue converter chip.
 
         Pass the required channel and request readings with interface.read().
         """
-        self.CHANNEL = channel
         if not getattr(self, 'MEDIAN_INTERVAL_SECONDS'):
             self.MEDIAN_INTERVAL_SECONDS = config.MEDIAN_INTERVAL_SECONDS
-        for attr in (
-                'TEXT',
-                'UNIT',
-                'MIN_UNITS',
-                'MAX_UNITS',
-                'MIN_VOLTS',
-                'MAX_VOLTS'):
-            if getattr(self, attr) is None:
-                raise AttributeError(
-                    f"AnalogueInterface must define '{attr}'")
+        err = []
+        for attr in self.REQUIRED_ATTRIBUTES:
+            if getattr(self, attr, None) is None:
+                err.append(attr)
+        if err:
+            raise AssertionError(
+                f"Analogue interface subclass missing required attributes:\n- "
+                + '\n- '.join(err)
+                + '\n\n' + __doc__
+            )
         if not self.V0_OFFSET:
             logger.warning("No V0_OFFSET set: consider zeroing this device.")
         self._setup()
 
     def _setup(self):
         """Create interface to MCP3008 chip."""
+        self.RANGE = self.RANGE_UPPER - self.RANGE_LOWER
+        self.DANGER_LOWER = self.RANGE_LOWER - self.RANGE
+        self.DANGER_UPPER = self.RANGE_UPPER + self.RANGE
+        self.FLOOR = self.RANGE_LOWER - self.RANGE * 2     # Absolute min
+        self.CEILING = self.RANGE_UPPER + self.RANGE * 2   # Absolute max
         self.mcp = MCP3008(
             cs=config.PIN_CS,
             miso=config.PIN_MISO,
@@ -97,14 +123,15 @@ class AnalogueInterface:
     def read(self, n=1):
         """Return channel reading."""
         self._setup()
-        if n == 1:
-            r = self.value
-        else:
+        if n > 1:
             r = self._read_median(n)
-        logger.debug(
+        else:
+            r = self.value
+        rounded = round(r, self.DECIMAL_POINTS)
+        logger.info(
             f"{type(self).__name__}"
-            f" READ: {round(r, self.DECIMAL_POINTS)} {self.UNIT} (n={n})")
-        return round(r, 4)
+            f" READ: {rounded}{self.UNIT} (n={n})")
+        return(rounded)
 
     def _read_median(self, n):
         """Return median channel reading from <n> samples."""
@@ -114,18 +141,35 @@ class AnalogueInterface:
             time.sleep(self.MEDIAN_INTERVAL_SECONDS)
         return statistics.median(readings)
 
+    def get_status_text(self, value):
+        """Return appropriate status text for given value."""
+        if (value > self.RANGE_LOWER
+                and value < self.RANGE_UPPER):
+            return STATUS.NORMAL
+        elif (value > self.DANGER_LOWER
+                and value < self.DANGER_UPPER):
+            return STATUS.WARNING
+        return STATUS.DANGER
+
     @classmethod
     def get_status(cls):
         """Create interface and return current status data."""
         sensor = cls()
         current = sensor.read(n=5)
-        percent = round(
-            (cls.MAX_UNITS - current) / (cls.MAX_UNITS - cls.MIN_UNITS),
-            4
-        )
+
+        # Represent reading as a percent of absolute limits such that 0.5 is in
+        # the middle of the optimal range (for display on dials).
+        if current > sensor.CEILING:
+            percent = 1
+        elif current < sensor.FLOOR:
+            percent = 0
+        else:
+            percent = round(
+                (current - sensor.FLOOR) / (sensor.CEILING - sensor.FLOOR), 4)
+
         return {
             'text': cls.TEXT,
-            'status': cls.get_status_text(current),
+            'status': sensor.get_status_text(current),
             'value': current,
             'percent': percent,
             'unit': cls.UNIT,
@@ -137,5 +181,5 @@ class AnalogueInterface:
         logger.info("~~~~~~ Press CTRL+C to end test ~~~~~~")
         time.sleep(1)
         while True:
-            logger.info(f"READING: {self.read()} {self.UNIT}")
+            logger.info(f"READING: {self.read()}{self.UNIT}")
             time.sleep(0.5)
