@@ -23,7 +23,7 @@ def level():
             logger.warning(message)
             # notifications.alert(message)
         else:
-            logger.debug(
+            logger.info(
                 "System pressure below lower limit of"
                 f" {ps.RANGE_LOWER}{ps.UNIT}")
         return restore(stat)
@@ -33,7 +33,7 @@ def level():
             f" {ps.RANGE_LOWER}{ps.UNIT}")
 
     if stat < ps.RANGE_UPPER and is_quiet_time(within_minutes=15):
-        logger.debug("Quiet time approaching. Restoring system pressure.")
+        logger.info("Quiet time approaching. Restoring system pressure.")
         return restore(stat)
 
     if stat > ps.DANGER_UPPER:

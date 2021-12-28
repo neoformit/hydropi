@@ -14,7 +14,8 @@ def is_quiet_time(within_minutes=0):
         f'{today} {config.QUIET_TIME_END}', "%Y-%m-%d %H:%M")
 
     if within_minutes:
-        # Calculate whether quiet time starts within X minutes
-        quiet_start -= timedelta(minutes=within_minutes)
+        # Calculate whether quiet time is starting within n minutes
+        quiet_start_within = quiet_start - timedelta(minutes=within_minutes)
+        return now > quiet_start_within and now < quiet_start
 
     return now > quiet_start or now < quiet_end
