@@ -4,6 +4,7 @@ https://tutorials-raspberrypi.com/raspberry-pi-ultrasonic-sensor-hc-sr04/
 """
 
 import time
+import math
 import logging
 import statistics
 try:
@@ -106,3 +107,16 @@ def time_to_distance(seconds):
         / 2                      # There and back
         * 10                     # cm -> mm
     )
+
+
+def mm_depth_to_volume(mm):
+    """Estimate volume (L) for given depth (mm) for a 60L bin."""
+    d = mm / 10   # Convert to cm
+    H = 50.0      # Total height
+    Rt = 21.7     # Radius top
+    Rb = 17.5     # Radius bottom
+    Rd = Rt - Rb  # Radius difference
+
+    return (
+        (Rd * d / H) / 2 + Rb
+    )**2 * math.pi * d / 10
