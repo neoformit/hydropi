@@ -33,7 +33,7 @@ def level():
             f" {ps.RANGE_LOWER}{ps.UNIT}")
 
     if stat < ps.RANGE_UPPER and is_quiet_time(within_minutes=15):
-        logger.info("Quiet time approaching. Restoring system pressure.")
+        logger.info("Quiet time approaching.")
         return restore(stat)
 
     if stat > ps.DANGER_UPPER:

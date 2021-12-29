@@ -53,8 +53,6 @@ class PressurePumpController(AbstractController):
             cumulative_duration += duration
             time.sleep(5)
             psi, duration = _next_duration()
-            logger.info(
-                f"Refill paused at {psi}{PressureSensor.UNIT}.")
 
         logger.info(
             f"System pressure restored to {psi}{PressureSensor.UNIT}"
