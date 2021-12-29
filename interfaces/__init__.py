@@ -29,4 +29,4 @@ CONTROLLERS = [
 def cleanup():
     """Clean up on termination."""
     for C in CONTROLLERS:
-        C.cleanup()
+        C.__del__()

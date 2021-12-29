@@ -33,12 +33,19 @@ class AbstractController:
         self.ID = ''.join(random.choices(string.ascii_lowercase, k=12))
         self._set_state(self.OFF)
 
-    @classmethod
-    def cleanup(cls):
-        """Clean up on deletion."""
-        deed = cls()._deed
+    def __del__(self):
+        """Clean up IO hardware on termination."""
+        io.setmode(io.BCM)
+        io.cleanup(self.PIN)
+        deed = self._deed
         if os.path.exists(deed):
             os.remove(deed)
+
+    def run(self):
+        """Run interactively (CLI only)."""
+        self.on()
+        input('Running... press enter to stop')
+        self.off()
 
     def on(self):
         """Activate the device."""
