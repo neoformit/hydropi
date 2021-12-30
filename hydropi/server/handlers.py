@@ -4,7 +4,7 @@ import os
 
 from hydropi.config import config
 from hydropi.interfaces.sensors import (
-    DepthSensor,
+    # DepthSensor,
     # PHSensor,
     # ECSensor,
     PressureSensor,
@@ -46,11 +46,11 @@ def get_status():
     }
 
 
-def get_log():
+def get_logs():
     """Return most recent log output."""
     fname = os.path.join(config.CONFIG_DIR, 'hydro.log')
     with open(fname) as f:
         lines = f.read().split('\n')
-    if len(lines) < 50:
+    if len(lines) < 150:
         return '\n'.join(lines) + '\n'
-    return '\n'.join(lines)[-50:] + '\n'
+    return '\n'.join(lines[-150:]) + '\n'

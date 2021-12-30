@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
-source ~/programs/anaconda/etc/profile.d/conda.sh
-conda activate hydroweb
+if [ "$USER" = 'pi' ]; then
+    source /home/pi/hydro/venv/bin/activate
+else
+    source ~/programs/anaconda/etc/profile.d/conda.sh
+    conda activate hydroweb
+fi
 
 rm -r build hydropi.egg-info
 pip uninstall --no-input hydropi
