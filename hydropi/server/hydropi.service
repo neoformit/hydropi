@@ -1,0 +1,17 @@
+[Unit]
+Description=Hydropi
+After=network.target
+
+[Service]
+PIDFile=/run/hydropi/pid
+User = pi
+Group = pi
+WorkingDirectory=/home/pi/hydro/hydropi
+Environment="PATH=/home/pi/hydro/venv/bin"
+ExecStart=/home/pi/hydro/venv/bin/python run.py
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
