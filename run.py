@@ -1,25 +1,27 @@
 #!/usr/bin/env python3
 
-"""Monitor hydroponics system to maintain state.
-
-Pass database parameters to enable real-time configuration.
-"""
+"""Monitor hydroponics system to maintain state and deliver nutrients."""
 
 try:
     import RPi.GPIO as io
 except ModuleNotFoundError:
     print("WARNING: Can't import Pi packages - assume developer mode")
     io = None
+
+import logging
 from threading import Thread
 from argparse import ArgumentParser
 from importlib import import_module
 
 from hydropi import interfaces
+from hydropi.config import config
 from hydropi.process.delivery import mist
 from hydropi.process.maintenance import sweep
 
 import signal
 signal.signal(signal.SIGINT, signal.default_int_handler)
+
+logger = logging.getLogger(__name__)
 
 
 def main():
@@ -28,7 +30,9 @@ def main():
         Thread(target=mist).start()
         sweep()
     finally:
-        io.cleanup()
+        if config.DEVMODE:
+            logger.warning("DEVMODE: skip IO cleanup")
+            io.cleanup()
         interfaces.cleanup()
 
 

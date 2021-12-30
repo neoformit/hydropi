@@ -30,4 +30,6 @@ def mist():
                 - config.MIST_DURATION_SECONDS
             )
     finally:
-        io.cleanup()
+        if config.DEVMODE:
+            logger.warning("DEVMODE: skip IO cleanup")
+            io.cleanup()

@@ -48,7 +48,8 @@ class DepthSensor:
         if n > 1:
             return self._read_median(n)
         if config.DEVMODE:
-            logger.warning("DEVMODE: configure sensor without ADC interface")
+            logger.warning(
+                "DEVMODE: configure depth without ultrasonic interface")
             td = random.uniform(
                 0.0001,
                 config.DEPTH_MAXIMUM_MM / 10 / SONIC_SPEED
