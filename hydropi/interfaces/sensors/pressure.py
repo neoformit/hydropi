@@ -12,7 +12,7 @@ class PressureSensor(AnalogueInterface):
     0.33 - 3 volts -> 0 - 145 psi
     """
 
-    TEXT = 'Pressure'
+    TEXT = 'pressure'
     UNIT = ' PSI'
     MIN_UNITS = 0
     MAX_UNITS = 175

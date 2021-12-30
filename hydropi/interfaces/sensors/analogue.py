@@ -97,6 +97,7 @@ class AnalogueInterface:
         """Create interface to MCP3008 chip."""
         if config.DEVMODE:
             logger.warning("DEVMODE: configure sensor without ADC interface")
+            return
         self.mcp = MCP3008(
             cs=config.PIN_CS,
             miso=config.PIN_MISO,
@@ -160,7 +161,9 @@ class AnalogueInterface:
         sensor = cls()
         if config.DEVMODE:
             logger.warning("DEVMODE: Return random reading")
-            current = random.uniform(sensor.DANGER_LOWER, sensor.DANGER_UPPER)
+            current = round(
+                random.uniform(sensor.DANGER_LOWER, sensor.DANGER_UPPER),
+                sensor.DECIMAL_POINTS)
         else:
             current = sensor.read(n=5)
 

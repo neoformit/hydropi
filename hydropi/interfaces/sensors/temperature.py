@@ -11,5 +11,5 @@ class TemperatureSensor(AnalogueInterface):
     """
 
     CHANNEL = config.CHANNEL_TEMPERATURE
-    TEXT = 'Temperature'
+    TEXT = 'temperature'
     UNIT = '°C'

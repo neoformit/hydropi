@@ -30,6 +30,7 @@ class DepthSensor:
     wall or other object.
     """
 
+    TEXT = 'depth'
     UNIT = 'mm'
 
     def __init__(self):
