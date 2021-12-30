@@ -14,9 +14,9 @@ from threading import Thread
 from argparse import ArgumentParser
 from importlib import import_module
 
-import interfaces
-from process.delivery import mist
-from process.maintenance import sweep
+from hydropi import interfaces
+from hydropi.process.delivery import mist
+from hydropi.process.maintenance import sweep
 
 import signal
 signal.signal(signal.SIGINT, signal.default_int_handler)
