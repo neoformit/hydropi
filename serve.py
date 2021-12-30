@@ -2,6 +2,6 @@
 
 """Serve the application over local HTTP."""
 
-from hydropi.server import server
+from hydropi.server.http import server
 
 server.listen()

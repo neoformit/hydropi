@@ -1,10 +1,11 @@
 # Environment
 #-------------------------------------------------------------------------------
-DEBUG: True                  # Extra logging output
+DEVMODE: True                # Spoof hardware interfaces
+DEBUG: False                 # Extra logging output
 CONFIG_DIR: '~/.hydropi'
 DAEMON_HTTP_PORT: 2021
 
-# Hardware pins (BMC)
+# Hardware pins (BCM)
 #-------------------------------------------------------------------------------
 
 # Inputs
@@ -21,8 +22,8 @@ PIN_MOSI: 20  # Dout
 PIN_CLK: 21   # CLK
 PIN_CS: 26    # Channel select
 
-# Outputs
-# Relay channel:pin
+# Output mapping
+# <Relay channel>: <BCM pin>
 # 1: 14
 # 2: 15
 # 3: 18
@@ -44,44 +45,42 @@ SPARE_RELAY_PIN_B: 1         # Ch. 8
 # Parameters
 #-------------------------------------------------------------------------------
 
-# Timing
-SWEEP_CYCLE_MINUTES: 10
-MIST_CYCLE_MINUTES: 5
-MIST_CYCLE_NIGHT_MINUTES: 20     # Reduce mist in quiet time
-MIST_DURATION_SECONDS: 2
-MIX_PUMP_SECONDS: 60
-MIX_ADDITION_DELAY_SECONDS: 10
-WATER_ADDITION_SECONDS: 10
-WATER_MAX_ADDITION_SECONDS: 60
-MEDIAN_INTERVAL_SECONDS: 0.01
+# General monitoring
 QUIET_TIME_START: "20:00"        # HH:MM
 QUIET_TIME_END: "07:00"          # HH:MM
+SWEEP_CYCLE_MINUTES: 10
+MEDIAN_INTERVAL_SECONDS: 0.01    # Pause in seconds between samples
+
+# Misting
+MIST_CYCLE_MINUTES: 5
+MIST_CYCLE_NIGHT_MINUTES: 20     # Reduce misting frequency during quiet time
+MIST_DURATION_SECONDS: 3
 
 # Pressure monitoring
-MIN_PRESSURE_PSI: 90
-MAX_PRESSURE_PSI: 120
-ALERT_PRESSURE_PSI: 70
+MIN_PRESSURE_PSI: 100                 # Optimal range to maintain
+MAX_PRESSURE_PSI: 130
+PRESSURE_REFILL_DURATION_SECONDS: 60  # This should be 75% of the time taken to refill from min -> max (0.375psi per second)
 
 # PH monitoring
-PH_TARGET: 6.0
-PH_LIMIT_WARN: 0.5
-PH_LIMIT_DANGER: 1
-PH_ACTION_THRESHOLD: 0.25
-PH_ACTION_THRESHOLD: 10
+PH_MIN: 5.8
+PH_MAX: 6.2
+PH_DANGER: 0.8
 
 # EC monitoring
-EC_TARGET: 1.8
-EC_LIMIT_WARN: 0.4
-EC_LIMIT_DANGER: 1
-EC_ACTION_THRESHOLD: 0.2
-EC_ADDITION_SECONDS: 2
+EC_MIN: 1.8
+EC_MAX: 2.2
+EC_ADDITION_SECONDS: 2           # Nutrients dose between mix + measure
 
-# Water level monitoring
-TANK_HEIGHT_MM: Null             # Total distance between head sensor and tank bottom (e.g. 225mm)
-DEPTH_MAXIMUM_MM: Null           # Depth units when full (e.g. 200mm)
-DEPTH_LIMIT_WARN: 0.75           # 75% full
-DEPTH_LIMIT_DANGER: 0.5
-DEPTH_ACTION_THRESHOLD: 0.75
+# Mixer pump - mix nutrient and pH additions into reservoir
+MIX_PUMP_SECONDS: 300
+MIX_ADDITION_DELAY_SECONDS: 10
+
+# Reservoir water level monitoring
+TANK_HEIGHT_MM: 500              # Total distance between head sensor and tank bottom (e.g. 225mm)
+DEPTH_MAX_MM: 200                # Depth units when full (e.g. 200mm)
+DEPTH_MIN_PC: 0.75
+WATER_ADDITION_SECONDS: 10
+WATER_MAX_ADDITION_SECONDS: 60
 
 # Database connection
 #-------------------------------------------------------------------------------

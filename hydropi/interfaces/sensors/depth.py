@@ -5,6 +5,7 @@ https://tutorials-raspberrypi.com/raspberry-pi-ultrasonic-sensor-hc-sr04/
 
 import time
 import math
+import random
 import logging
 import statistics
 try:
@@ -33,35 +34,34 @@ class DepthSensor:
 
     def __init__(self):
         """Initialise interface."""
+        if config.DEVMODE:
+            logger.warning("DEVMODE: configure sensor without ADC interface")
+            return
         io.setmode(io.BCM)
         io.setup(config.PIN_DEPTH_TRIG, io.OUT)
         io.setup(config.PIN_DEPTH_ECHO, io.IN)
         io.output(config.PIN_DEPTH_TRIG, 0)
         time.sleep(1)
 
-    def read(self, n=1, depth=False):
+    def read(self, n=1, depth=False, volume=False):
         """Return current depth in mm."""
         if n > 1:
-            return self.read_median(n)
-        io.output(config.PIN_DEPTH_TRIG, 1)
-        time.sleep(0.00001)
-        io.output(config.PIN_DEPTH_TRIG, 0)
-
-        # Collect end of echo pulse
-        while io.input(config.PIN_DEPTH_ECHO) == 0:
-            pulse_start = time.time()
-
-        # Collect end of echo pulse
-        while io.input(config.PIN_DEPTH_ECHO) == 1:
-            pulse_end = time.time()
-
-        td = pulse_end - pulse_start
-
+            return self._read_median(n)
+        if config.DEVMODE:
+            logger.warning("DEVMODE: configure sensor without ADC interface")
+            td = random.uniform(
+                0.0001,
+                config.DEPTH_MAXIMUM_MM / 10 / SONIC_SPEED
+            )
+        else:
+            td = self._get_echo_time()
+        if volume:
+            return time_to_volume(td)
         if depth:
             return time_to_depth(td)
         return time_to_distance(td)
 
-    def read_median(self, n):
+    def _read_median(self, n):
         """Return median channel reading from <n> samples."""
         readings = []
         for i in range(n):
@@ -71,13 +71,28 @@ class DepthSensor:
         logger.debug(f"{type(self).__name__} READ: {r}{self.UNIT} (n={n})")
         return r
 
+    def _get_echo_time(self):
+        """Collect a reading from the ultrasonic sensor."""
+        io.output(config.PIN_DEPTH_TRIG, 1)
+        time.sleep(0.00001)
+        io.output(config.PIN_DEPTH_TRIG, 0)
+        # Collect end of echo pulse
+        while io.input(config.PIN_DEPTH_ECHO) == 0:
+            pulse_start = time.time()
+        # Collect end of echo pulse
+        while io.input(config.PIN_DEPTH_ECHO) == 1:
+            pulse_end = time.time()
+
+        return pulse_end - pulse_start
+
     def get_status_text(self, value):
         """Return appropriate status text for given value."""
-        return None
+        return 'NA'
 
     def full(self):
         """Check whether tank is full and return Boolean."""
         stat = self.read(n=5)
+        # 95% full is good enough
         if stat < 0.95 * config.DEPTH_MAXIMUM_MM:
             logger.debug("Tank depth below full")
             return False
@@ -87,7 +102,7 @@ class DepthSensor:
     def test(self):
         """Test the component interface."""
         while True:
-            logger.info(f"READING: {self.read_median(n=15)}{self.UNIT}")
+            logger.info(f"READING: {self.read(n=15)}{self.UNIT}")
             time.sleep(1)
 
 
@@ -109,8 +124,9 @@ def time_to_distance(seconds):
     )
 
 
-def mm_depth_to_volume(mm):
-    """Estimate volume (L) for given depth (mm) for a 60L bin."""
+def time_to_volume(seconds):
+    """Estimate volume (L) for given echo response in a 60L bin."""
+    mm = time_to_depth(seconds)
     d = mm / 10   # Convert to cm
     H = 50.0      # Total height
     Rt = 21.7     # Radius top

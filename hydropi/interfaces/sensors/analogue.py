@@ -18,6 +18,7 @@ DANGER_DIFF | Danger zone variance from optimal range
 """
 
 import time
+import random
 import logging
 import statistics
 try:
@@ -85,15 +86,17 @@ class AnalogueInterface:
             )
         if not self.V0_OFFSET:
             logger.warning("No V0_OFFSET set: consider zeroing this device.")
-        self._setup()
-
-    def _setup(self):
-        """Create interface to MCP3008 chip."""
         self.RANGE = self.RANGE_UPPER - self.RANGE_LOWER
         self.DANGER_LOWER = self.RANGE_LOWER - self.RANGE
         self.DANGER_UPPER = self.RANGE_UPPER + self.RANGE
         self.FLOOR = self.RANGE_LOWER - self.RANGE * 2     # Absolute min
         self.CEILING = self.RANGE_UPPER + self.RANGE * 2   # Absolute max
+        self._setup()
+
+    def _setup(self):
+        """Create interface to MCP3008 chip."""
+        if config.DEVMODE:
+            logger.warning("DEVMODE: configure sensor without ADC interface")
         self.mcp = MCP3008(
             cs=config.PIN_CS,
             miso=config.PIN_MISO,
@@ -155,7 +158,11 @@ class AnalogueInterface:
     def get_status(cls):
         """Create interface and return current status data."""
         sensor = cls()
-        current = sensor.read(n=5)
+        if config.DEVMODE:
+            logger.warning("DEVMODE: Return random reading")
+            current = random.uniform(sensor.DANGER_LOWER, sensor.DANGER_UPPER)
+        else:
+            current = sensor.read(n=5)
 
         # Represent reading as a percent of absolute limits such that 0.5 is in
         # the middle of the optimal range (for display on dials).
