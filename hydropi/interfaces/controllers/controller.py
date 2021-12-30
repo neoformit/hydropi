@@ -35,14 +35,13 @@ class AbstractController:
 
     def __del__(self):
         """Clean up IO hardware on termination."""
+        if os.path.exists(self._deed):
+            os.remove(self._deed)
         if config.DEVMODE:
             logger.warning("DEVMODE: skip IO cleanup")
-        else:
-            io.setmode(io.BCM)
-            io.cleanup(self.PIN)
-        deed = self._deed
-        if os.path.exists(deed):
-            os.remove(deed)
+            return
+        io.setmode(io.BCM)
+        io.cleanup(self.PIN)
 
     def run(self):
         """Run interactively (CLI only)."""
@@ -74,9 +73,10 @@ class AbstractController:
         self.state = state
         if config.DEVMODE:
             logger.warning("DEVMODE: spoofed IO operation")
-            io.setmode(io.BCM)
-            io.setup(self.PIN, io.OUT)
-            io.output(self.PIN, state)
+            return
+        io.setmode(io.BCM)
+        io.setup(self.PIN, io.OUT)
+        io.output(self.PIN, state)
 
     def _get_owners(self):
         """Return list of owners of this interface."""
