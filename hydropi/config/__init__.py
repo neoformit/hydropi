@@ -27,6 +27,12 @@ class Config:
 
     def __init__(self, fname):
         """Read in config from yaml."""
+        if not os.path.exists(fname):
+            raise FileNotFoundError(
+                f'Config file does not exist: {fname}\n'
+                'Please create a hydropi config file to set up interfaces.\n'
+                'For an example see: https://github.com/neoformit/hydropi'
+                '/blob/main/config.yml.sample')
         with open(fname) as f:
             for k, v in self.parse(yaml.safe_load(f)).items():
                 setattr(self, k, v)
