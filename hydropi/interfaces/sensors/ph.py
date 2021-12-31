@@ -1,11 +1,11 @@
 """Interface for reading nutrient pH level."""
 
 from hydropi.config import config
-from .analogue import AnalogueInterface
+from .analog import AnalogInterface
 
 
-class PHSensor(AnalogueInterface):
-    """Interface for analogue pressure sensor.
+class PHSensor(AnalogInterface):
+    """Interface for analog pressure sensor.
 
     Call .read() to get current pressure.
     """

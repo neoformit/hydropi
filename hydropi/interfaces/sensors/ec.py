@@ -1,11 +1,11 @@
 """Interface for reading nutrient conductivity levels."""
 
 from hydropi.config import config
-from .analogue import AnalogueInterface
+from .analog import AnalogInterface
 
 
-class ECSensor(AnalogueInterface):
-    """Interface for analogue EC sensor.
+class ECSensor(AnalogInterface):
+    """Interface for analog EC sensor.
 
     Call .read() to get conductivity in mS.
     """

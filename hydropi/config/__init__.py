@@ -3,7 +3,7 @@
 These are default values that may be overwritten at runtime.
 
 - Digital io passes through pins (gpio header pins)
-- Analogue io passes through channels (MCP3008 chip interface)
+- Analog io passes through channels (MCP3008 chip interface)
 
 Perhaps makes sense to conditionally read/set config from SQLite connection at
 runtime, if one exists. Can share a connection with the web app. But need to

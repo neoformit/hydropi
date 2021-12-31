@@ -1,4 +1,4 @@
-"""Read generic analogue signals.
+"""Read generic analog signals.
 
 https://learn.adafruit.com/raspberry-pi-analog-to-digital-converters/mcp3008
 
@@ -41,8 +41,8 @@ class STATUS:
     DANGER = 'danger'
 
 
-class AnalogueInterface:
-    """Abstract interface for an analogue sensor input."""
+class AnalogInterface:
+    """Abstract interface for an analog sensor input."""
 
     DECIMAL_POINTS = 4  # Set to None for integer
     MEDIAN_INTERVAL_SECONDS = None
@@ -68,7 +68,7 @@ class AnalogueInterface:
     )
 
     def __init__(self):
-        """Create interface for the MCP3008 analogue converter chip.
+        """Create interface for the MCP3008 analog converter chip.
 
         Pass the required channel and request readings with interface.read().
         """
@@ -80,7 +80,7 @@ class AnalogueInterface:
                 err.append(attr)
         if err:
             raise AssertionError(
-                f"Analogue interface subclass missing required attributes:\n- "
+                f"Analog interface subclass missing required attributes:\n- "
                 + '\n- '.join(err)
                 + '\n\n' + __doc__
             )
@@ -187,7 +187,7 @@ class AnalogueInterface:
 
     def test(self):
         """Test channel readings."""
-        logger.info(f"Testing {type(self).__name__} analogue sensor...")
+        logger.info(f"Testing {type(self).__name__} analog sensor...")
         logger.info("~~~~~~ Press CTRL+C to end test ~~~~~~")
         time.sleep(1)
         while True:

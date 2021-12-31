@@ -1,11 +1,11 @@
 """Interface for reading system pressure."""
 
 from hydropi.config import config
-from .analogue import AnalogueInterface
+from .analog import AnalogInterface
 
 
-class PressureSensor(AnalogueInterface):
-    """Interface for analogue pressure sensor.
+class PressureSensor(AnalogInterface):
+    """Interface for analog pressure sensor.
 
     Call read() to get current pressure.
 
