@@ -40,8 +40,11 @@ def configure(config):
                 'formatter': 'standard',
             },
         },
-        'root': {
-            'level': log_level,
-            'handlers': ['console', 'file'],
-        },
+        'loggers': {
+            'hydropi': {
+                'level': log_level,
+                'handlers': ['console', 'file'],
+                'propagate': True,
+            },
+        }
     })
