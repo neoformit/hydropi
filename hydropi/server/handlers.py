@@ -48,9 +48,14 @@ def get_status():
 
 def get_logs():
     """Return most recent log output."""
+    MAX_BYTES = 1024 * 1024  # 1MB
     fname = os.path.join(config.CONFIG_DIR, 'hydro.log')
-    with open(fname) as f:
-        lines = f.read().split('\n')
+    with open(fname, 'rb') as f:
+        if os.path.getsize(fname) > MAX_BYTES:
+            # Open the last MB only
+            f.seek(-1 * MAX_BYTES, os.SEEK_END)
+        lines = f.read().decode('utf-8').split('\n')
+    lines.reverse()
     if len(lines) < 150:
         return '\n'.join(lines) + '\n'
-    return '\n'.join(lines[-150:]) + '\n'
+    return '\n'.join(lines[:150]) + '\n'
