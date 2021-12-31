@@ -4,11 +4,14 @@ import os
 import logging
 import logging.config
 
-logger = logging.getLogger(__name__)
-
 
 def configure(config):
     """Configure app logger."""
+    if os.environ.get('DISABLE_HYDROPI_LOG'):
+        logger = logging.getLogger(__name__)
+        logger.info("Skip Hydropi log config (DISABLE_HYDROPI_LOG = True)")
+        return
+
     log_level = 'DEBUG' if config.DEBUG else 'INFO'
     logging.config.dictConfig({
         'version': 1,
