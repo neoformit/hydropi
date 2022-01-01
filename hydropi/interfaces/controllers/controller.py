@@ -43,10 +43,14 @@ class AbstractController:
         io.setmode(io.BCM)
         io.cleanup(self.PIN)
 
-    def run(self):
+    def run(self, seconds=None):
         """Run interactively (CLI only)."""
         self.on()
-        input('Running... press enter to stop')
+        if seconds is not None:
+            input(f'Running {type(self).__name__} for {seconds} seconds')
+            time.sleep(seconds)
+        else:
+            input(f'Running {type(self).__name__}... press enter to stop')
         self.off()
 
     def on(self):

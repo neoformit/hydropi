@@ -1,31 +1,31 @@
 """Operate doser pump to decrease the pH of the nutrient reservoir."""
 
-import time
 import logging
-from threading import Thread
 
 from hydropi.config import config
-
-from .controller import AbstractController
-from .mix import MixPumpController
+from .dose import AbstractDoseController
 
 logger = logging.getLogger(__name__)
 
 
-class PHController(AbstractController):
-    """Control acid delivery to decrease the pH."""
+class PHController(AbstractDoseController):
+    """Control pH with down additive (phosphoric acid).
+
+    Dosage:
+    ------
+    0.5ml STRAIGHT pH down in 15L
+        --> 10X dilution
+            --> 5ml in 15L      # Lasts longer
+        --> 50X dilution
+            --> 25ml in 15L     # More accurate
+
+    """
 
     PIN = config.PIN_PH_DOWN_PUMP
 
-    def down(self):
-        """Reduce the pH with an acid addition."""
-        seconds = config.PH_ADDITION_SECONDS
-        delay = config.MIX_ADDITION_DELAY_SECONDS
-        logger.info(f"ACTION: pH down addition {seconds} seconds")
-        logger.info(f"DELAY: {delay} seconds")
-        mixer = MixPumpController()
-        Thread(target=mixer.mix).start()
-        time.sleep(delay)
-        self.on()
-        time.sleep(seconds)
-        self.off()
+    def deliver(self):
+        """Deliver pH down additive."""
+        # Set default dose to 5ml
+        super().deliver(ml=5)
+
+    # def balance()  # When pH sensor working
