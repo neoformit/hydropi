@@ -14,7 +14,7 @@ class MixPumpController(AbstractController):
 
     PIN = config.PIN_MIX_PUMP
 
-    def run(self):
+    def mix(self):
         """Run pump to mix nutrient tank additions."""
         logger.debug(f"ACTION: Mix tank for {config.MIX_PUMP_SECONDS} seconds")
         self.on()

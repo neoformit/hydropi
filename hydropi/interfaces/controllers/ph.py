@@ -24,7 +24,7 @@ class PHController(AbstractController):
         logger.info(f"ACTION: pH down addition {seconds} seconds")
         logger.info(f"DELAY: {delay} seconds")
         mixer = MixPumpController()
-        Thread(target=mixer.run).start()
+        Thread(target=mixer.mix).start()
         time.sleep(delay)
         self.on()
         time.sleep(seconds)

@@ -24,7 +24,7 @@ class ECController(AbstractController):
         logger.info(f"ACTION: top up nutrient levels {seconds} seconds")
         logger.info(f"DELAY: {delay} seconds")
         mixer = MixPumpController()
-        Thread(target=mixer.run).start()
+        Thread(target=mixer.mix).start()
         time.sleep(delay)
         self.on()
         time.sleep(seconds)
