@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """Read temp from OneWire interface."""
 
 from time import sleep

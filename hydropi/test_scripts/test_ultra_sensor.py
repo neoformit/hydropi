@@ -3,31 +3,32 @@
 """Test ultrasonic sensor.
 
 https://pimylifeup.com/raspberry-pi-distance-sensor/
+
+5cm from parallel wall it is accurate to within 10mm.
+
 """
 
-import RPi.GPIO as GPIO
 import time
+import RPi.GPIO as GPIO
 
-try:
-    PIN_TRIGGER = 14
-    PIN_ECHO = 15
+PIN_TRIGGER = 4
+PIN_ECHO = 5
 
+
+def setup():
+    """Configure ultrasonic sensor."""
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(PIN_TRIGGER, GPIO.OUT)
     GPIO.setup(PIN_ECHO, GPIO.IN)
-
     GPIO.output(PIN_TRIGGER, GPIO.LOW)
-
-    print("Waiting for sensor to settle")
-
+    # Let sensor settle
     time.sleep(2)
 
-    print("Calculating distance")
 
+def read():
+    """Take a distance reading."""
     GPIO.output(PIN_TRIGGER, GPIO.HIGH)
-
     time.sleep(0.00001)
-
     GPIO.output(PIN_TRIGGER, GPIO.LOW)
 
     while GPIO.input(PIN_ECHO) == 0:
@@ -36,8 +37,14 @@ try:
         pulse_end_time = time.time()
 
     pulse_duration = pulse_end_time - pulse_start_time
-    distance = round(pulse_duration * 17150, 2)
-    print("Distance:", distance, "cm")
+    return round(pulse_duration * 17150 * 10)
 
-finally:
-    GPIO.cleanup()
+
+if __name__ == '__main__':
+    print("Measuring distance")
+    try:
+        setup()
+        while True:
+            print(f"Read: {read()}mm")
+    finally:
+        GPIO.cleanup()
