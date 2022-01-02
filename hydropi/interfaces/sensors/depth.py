@@ -34,6 +34,8 @@ class DepthSensor:
     TEXT = 'depth'
     UNIT = 'L'
     DECIMAL_POINTS = 1
+    PIN_TRIG = config.PIN_DEPTH_TRIG
+    PIN_ECHO = config.PIN_DEPTH_ECHO
 
     def __init__(self):
         """Initialise interface."""
@@ -54,9 +56,9 @@ class DepthSensor:
         self.DANGER_UPPER_L = self.DEPTH_TARGET_L * (
             1 + config.DEPTH_TOLERANCE * 2)
         io.setmode(io.BCM)
-        io.setup(config.PIN_DEPTH_TRIG, io.OUT)
-        io.setup(config.PIN_DEPTH_ECHO, io.IN)
-        io.output(config.PIN_DEPTH_TRIG, 0)
+        io.setup(self.PIN_TRIG, io.OUT)
+        io.setup(self.PIN_ECHO, io.IN)
+        io.output(self.PIN_TRIG, 0)
         time.sleep(1)
 
     def __del__(self):
@@ -65,7 +67,8 @@ class DepthSensor:
             logger.warning("DEVMODE: skip IO cleanup")
             return
         io.setmode(io.BCM)
-        io.cleanup(self.PIN)
+        io.cleanup(self.PIN_TRIG)
+        io.cleanup(self.PIN_ECHO)
 
     def read(self, n=1, depth=False, head=False):
         """Return current depth in mm."""
@@ -104,14 +107,14 @@ class DepthSensor:
 
     def _get_echo_time(self):
         """Collect a reading from the ultrasonic sensor."""
-        io.output(config.PIN_DEPTH_TRIG, 1)
+        io.output(self.PIN_TRIG, 1)
         time.sleep(0.00001)
-        io.output(config.PIN_DEPTH_TRIG, 0)
+        io.output(self.PIN_TRIG, 0)
         # Collect end of echo pulse
-        while io.input(config.PIN_DEPTH_ECHO) == 0:
+        while io.input(self.PIN_ECHO) == 0:
             pulse_start = time.time()
         # Collect end of echo pulse
-        while io.input(config.PIN_DEPTH_ECHO) == 1:
+        while io.input(self.PIN_ECHO) == 1:
             pulse_end = time.time()
 
         return pulse_end - pulse_start

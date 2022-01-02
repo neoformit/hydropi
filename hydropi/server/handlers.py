@@ -33,13 +33,13 @@ def get_status():
         status = 'danger'
 
     # Hard code fake depth until that's working
-    params['depth'] = {
-        'text': 'Depth',
-        'status': 'normal',
-        'value': 30,
-        'percent': 0.45,
-        'unit': '%',
-      }
+    # params['depth'] = {
+    #     'text': 'Depth',
+    #     'status': 'normal',
+    #     'value': 30,
+    #     'percent': 0.45,
+    #     'unit': '%',
+    #   }
     return {
         'params': params,
         'text': status,
