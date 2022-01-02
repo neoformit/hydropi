@@ -45,7 +45,7 @@ class AnalogInterface:
     """Abstract interface for an analog sensor input."""
 
     DECIMAL_POINTS = 4  # Set to None for integer
-    MEDIAN_INTERVAL_SECONDS = None
+    MEDIAN_INTERVAL_SECONDS = config.MEDIAN_INTERVAL_SECONDS
 
     # Sensor calibration params
     VREF = 3.3
@@ -56,7 +56,7 @@ class AnalogInterface:
     MAX_VOLTS = None
 
     REQUIRED_ATTRIBUTES = (
-        'CHANNEL',      # Relay channel to operate (zero-indexed)
+        'CHANNEL',      # ADC channel to read (zero-indexed)
         'TEXT',         # Display text for sensor e.g. "temperature"
         'UNIT',         # Units of measurement e.g. °C (may prefix with space)
         'MIN_UNITS',    # Min units sensor can measure - often zero
@@ -72,8 +72,16 @@ class AnalogInterface:
 
         Pass the required channel and request readings with interface.read().
         """
-        if not getattr(self, 'MEDIAN_INTERVAL_SECONDS'):
-            self.MEDIAN_INTERVAL_SECONDS = config.MEDIAN_INTERVAL_SECONDS
+        self._validate()
+        self._setup()
+        self.RANGE = self.RANGE_UPPER - self.RANGE_LOWER
+        self.DANGER_LOWER = self.RANGE_LOWER - self.RANGE
+        self.DANGER_UPPER = self.RANGE_UPPER + self.RANGE
+        self.FLOOR = self.RANGE_LOWER - self.RANGE * 2     # Absolute min
+        self.CEILING = self.RANGE_UPPER + self.RANGE * 2   # Absolute max
+
+    def _validate(self):
+        """Ensure subclass attributes are set correctly."""
         err = []
         for attr in self.REQUIRED_ATTRIBUTES:
             if getattr(self, attr, None) is None:
@@ -86,12 +94,6 @@ class AnalogInterface:
             )
         if not self.V0_OFFSET:
             logger.warning("No V0_OFFSET set: consider zeroing this device.")
-        self.RANGE = self.RANGE_UPPER - self.RANGE_LOWER
-        self.DANGER_LOWER = self.RANGE_LOWER - self.RANGE
-        self.DANGER_UPPER = self.RANGE_UPPER + self.RANGE
-        self.FLOOR = self.RANGE_LOWER - self.RANGE * 2     # Absolute min
-        self.CEILING = self.RANGE_UPPER + self.RANGE * 2   # Absolute max
-        self._setup()
 
     def _setup(self):
         """Create interface to MCP3008 chip."""

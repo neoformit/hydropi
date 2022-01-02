@@ -44,6 +44,14 @@ class DepthSensor:
         io.output(config.PIN_DEPTH_TRIG, 0)
         time.sleep(1)
 
+    def __del__(self):
+        """Clean up IO hardware on termination."""
+        if config.DEVMODE:
+            logger.warning("DEVMODE: skip IO cleanup")
+            return
+        io.setmode(io.BCM)
+        io.cleanup(self.PIN)
+
     def read(self, n=1, depth=False, volume=False):
         """Return current depth in mm."""
         if n > 1:
@@ -58,10 +66,16 @@ class DepthSensor:
         else:
             td = self._get_echo_time()
         if volume:
-            return time_to_volume(td)
+            r = round(time_to_volume(td), 1)
+            logger.info(f"DepthSensor READ: {r}L (n={n})")
+            return r
         if depth:
-            return time_to_depth(td)
-        return time_to_distance(td)
+            r = round(time_to_depth(td), None)
+            logger.info(f"DepthSensor READ: {r}{self.UNIT} (n={n})")
+            return r
+        r = round(time_to_distance(td), None)
+        logger.info(f"DepthSensor READ: {r}{self.UNIT} (n={n})")
+        return r
 
     def _read_median(self, n):
         """Return median channel reading from <n> samples."""
@@ -137,4 +151,4 @@ def time_to_volume(seconds):
 
     return (
         (Rd * d / H) / 2 + Rb
-    )**2 * math.pi * d / 10
+    )**2 * math.pi * d / 1000

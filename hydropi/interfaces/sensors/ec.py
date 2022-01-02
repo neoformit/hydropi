@@ -12,9 +12,11 @@ class ECSensor(AnalogInterface):
 
     CHANNEL = config.CHANNEL_EC
     TEXT = 'EC'
-    UNIT = 'mS'
+    UNIT = 'uS'
     MIN_UNITS = 0
-    MAX_UNITS = 1562
+    MAX_UNITS = 3125
     MIN_VOLTS = 0
-    MAX_VOLTS = 2.3
+    MAX_VOLTS = 3.3
     V0_OFFSET = 0
+    RANGE_LOWER = config.EC_MIN
+    RANGE_UPPER = config.EC_MAX
