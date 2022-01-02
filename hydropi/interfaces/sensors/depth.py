@@ -15,6 +15,7 @@ except ModuleNotFoundError:
     io = None
 
 from hydropi.config import config
+from .analog import STATUS
 
 logger = logging.getLogger(__name__)
 
@@ -31,13 +32,27 @@ class DepthSensor:
     """
 
     TEXT = 'depth'
-    UNIT = 'mm'
+    UNIT = 'L'
+    DECIMAL_POINTS = 1
 
     def __init__(self):
         """Initialise interface."""
         if config.DEVMODE:
             logger.warning("DEVMODE: configure sensor without ADC interface")
             return
+
+        self.FLOOR = 0
+        self.CEILING = depth_to_volume(config.DEPTH_MAX_MM)
+        self.DEPTH_TARGET_MM = config.DEPTH_TARGET_PC * config.DEPTH_MAX_MM
+        self.DEPTH_TARGET_L = depth_to_volume(self.DEPTH_TARGET_MM)
+        self.RANGE_LOWER_L = self.DEPTH_TARGET_L * (
+            1 - config.DEPTH_TOLERANCE)
+        self.RANGE_UPPER_L = self.DEPTH_TARGET_L * (
+            1 + config.DEPTH_TOLERANCE)
+        self.DANGER_LOWER_L = self.DEPTH_TARGET_L * (
+            1 - config.DEPTH_TOLERANCE * 2)
+        self.DANGER_UPPER_L = self.DEPTH_TARGET_L * (
+            1 + config.DEPTH_TOLERANCE * 2)
         io.setmode(io.BCM)
         io.setup(config.PIN_DEPTH_TRIG, io.OUT)
         io.setup(config.PIN_DEPTH_ECHO, io.IN)
@@ -52,7 +67,7 @@ class DepthSensor:
         io.setmode(io.BCM)
         io.cleanup(self.PIN)
 
-    def read(self, n=1, depth=False, volume=False):
+    def read(self, n=1, depth=False, head=False):
         """Return current depth in mm."""
         if n > 1:
             return self._read_median(n)
@@ -65,15 +80,15 @@ class DepthSensor:
             )
         else:
             td = self._get_echo_time()
-        if volume:
-            r = round(time_to_volume(td), 1)
-            logger.info(f"DepthSensor READ: {r}L (n={n})")
+        if head:
+            r = round(time_to_distance(td), None)
+            logger.info(f"DepthSensor READ: HEAD {r}mm (n={n})")
             return r
         if depth:
             r = round(time_to_depth(td), None)
-            logger.info(f"DepthSensor READ: {r}{self.UNIT} (n={n})")
+            logger.info(f"DepthSensor READ: DEPTH {r}mm (n={n})")
             return r
-        r = round(time_to_distance(td), None)
+        r = round(time_to_volume(td), 1)
         logger.info(f"DepthSensor READ: {r}{self.UNIT} (n={n})")
         return r
 
@@ -82,7 +97,7 @@ class DepthSensor:
         readings = []
         for i in range(n):
             readings.append(self.read())
-            time.sleep(config.MEDIAN_SAMPLE_DELAY_SECONDS)
+            time.sleep(config.MEDIAN_INTERVAL_SECONDS)
         r = statistics.median(readings)
         logger.debug(f"{type(self).__name__} READ: {r}{self.UNIT} (n={n})")
         return r
@@ -103,7 +118,43 @@ class DepthSensor:
 
     def get_status_text(self, value):
         """Return appropriate status text for given value."""
-        return 'NA'
+        if (value > self.RANGE_LOWER_L
+                and value < self.RANGE_UPPER_L):
+            return STATUS.NORMAL
+        elif (value > self.DANGER_LOWER_L
+                and value < self.DANGER_UPPER_L):
+            return STATUS.WARNING
+        return STATUS.DANGER
+
+    @classmethod
+    def get_status(cls):
+        """Create interface and return current status data."""
+        depth = cls()
+        if config.DEVMODE:
+            logger.warning("DEVMODE: Return random reading")
+            current = round(
+                random.uniform(depth.DANGER_LOWER_L, depth.DANGER_UPPER_L),
+                depth.DECIMAL_POINTS)
+        else:
+            current = depth.read(n=5)
+
+        # Represent reading as a percent of absolute limits such that 0.5 is in
+        # the middle of the optimal range (for display on dials).
+        if current > depth.CEILING:
+            percent = 1
+        elif current < depth.FLOOR:
+            percent = 0
+        else:
+            percent = round(
+                (current - depth.FLOOR) / (depth.CEILING - depth.FLOOR), 4)
+
+        return {
+            'text': cls.TEXT,
+            'status': depth.get_status_text(current),
+            'value': current,
+            'percent': percent,
+            'unit': cls.UNIT,
+        }
 
     def full(self):
         """Check whether tank is full and return Boolean."""
@@ -143,6 +194,11 @@ def time_to_distance(seconds):
 def time_to_volume(seconds):
     """Estimate volume (L) for given echo response in a 60L bin."""
     mm = time_to_depth(seconds)
+    return depth_to_volume(mm)
+
+
+def depth_to_volume(mm):
+    """Estimate volume in litres for given depth in mm."""
     d = mm / 10   # Convert to cm
     H = 50.0      # Total height
     Rt = 21.7     # Radius top

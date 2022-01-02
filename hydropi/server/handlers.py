@@ -4,19 +4,19 @@ import os
 
 from hydropi.config import config
 from hydropi.interfaces.sensors import (
-    # DepthSensor,
+    DepthSensor,
+    PressureSensor,
     # PHSensor,
     # ECSensor,
-    PressureSensor,
     # TemperatureSensor,
 )
 
 SENSORS = {
-    # 'depth': DepthSensor,
+    'pressure': PressureSensor,
+    'depth': DepthSensor,
     # 'ph': PHSensor,
     # 'ec': ECSensor,
     # 'temperature': TemperatureSensor,
-    'pressure': PressureSensor,
 }
 
 
