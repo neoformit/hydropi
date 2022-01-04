@@ -15,6 +15,8 @@ class ECController(AbstractDoseController):
     ------
     - 50ml (each) in 15L --> 1100 uS
 
+    - deliver(ml=20) into 10L -> +700uS
+
     """
 
     PIN = config.PIN_NUTRIENT_PUMP

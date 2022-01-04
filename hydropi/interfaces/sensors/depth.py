@@ -20,6 +20,9 @@ from .analog import STATUS
 logger = logging.getLogger(__name__)
 
 SONIC_SPEED = 34300  # cm/sec
+H = 50.0      # Total height of nutrient bin (reservoir)
+RT = 21.7     # Radius top
+RB = 17.5     # Radius bottom
 
 
 class DepthSensor:
@@ -39,22 +42,21 @@ class DepthSensor:
 
     def __init__(self):
         """Initialise interface."""
+        self.FLOOR_L = 0
+        self.CEILING_L = depth_to_volume(config.DEPTH_MAX_MM)
+        self.VOLUME_TARGET_L = config.VOLUME_TARGET_L
+        self.VOLUME_TARGET_PC = config.VOLUME_TARGET_L / self.CEILING_L
+        self.RANGE_LOWER_L = self.VOLUME_TARGET_L * (
+            1 - config.VOLUME_TOLERANCE)
+        self.RANGE_UPPER_L = self.VOLUME_TARGET_L * (
+            1 + config.VOLUME_TOLERANCE)
+        self.DANGER_LOWER_L = self.VOLUME_TARGET_L * (
+            1 - config.VOLUME_TOLERANCE * 2)
+        self.DANGER_UPPER_L = self.VOLUME_TARGET_L * (
+            1 + config.VOLUME_TOLERANCE * 2)
         if config.DEVMODE:
             logger.warning("DEVMODE: configure sensor without ADC interface")
             return
-
-        self.FLOOR = 0
-        self.CEILING = depth_to_volume(config.DEPTH_MAX_MM)
-        self.DEPTH_TARGET_MM = config.DEPTH_TARGET_PC * config.DEPTH_MAX_MM
-        self.DEPTH_TARGET_L = depth_to_volume(self.DEPTH_TARGET_MM)
-        self.RANGE_LOWER_L = self.DEPTH_TARGET_L * (
-            1 - config.DEPTH_TOLERANCE)
-        self.RANGE_UPPER_L = self.DEPTH_TARGET_L * (
-            1 + config.DEPTH_TOLERANCE)
-        self.DANGER_LOWER_L = self.DEPTH_TARGET_L * (
-            1 - config.DEPTH_TOLERANCE * 2)
-        self.DANGER_UPPER_L = self.DEPTH_TARGET_L * (
-            1 + config.DEPTH_TOLERANCE * 2)
         io.setmode(io.BCM)
         io.setup(self.PIN_TRIG, io.OUT)
         io.setup(self.PIN_ECHO, io.IN)
@@ -141,21 +143,24 @@ class DepthSensor:
         else:
             current = depth.read(n=5)
 
-        # Represent reading as a percent of absolute limits such that 0.5 is in
-        # the middle of the optimal range (for display on dials).
-        if current > depth.CEILING:
-            percent = 1
-        elif current < depth.FLOOR:
-            percent = 0
+        # Represent reading as a percent of total volume
+        if current > depth.CEILING_L:
+            percent = 1.0
+        elif current < depth.FLOOR_L:
+            percent = 0.0
         else:
             percent = round(
-                (current - depth.FLOOR) / (depth.CEILING - depth.FLOOR), 4)
+                (current - depth.FLOOR_L)
+                / (depth.CEILING_L - depth.FLOOR_L),
+                4
+            )
 
         return {
             'text': cls.TEXT,
             'status': depth.get_status_text(current),
             'value': current,
             'percent': percent,
+            'targetPercent': depth.VOLUME_TARGET_PC,
             'unit': cls.UNIT,
         }
 
@@ -203,11 +208,8 @@ def time_to_volume(seconds):
 def depth_to_volume(mm):
     """Estimate volume in litres for given depth in mm."""
     d = mm / 10   # Convert to cm
-    H = 50.0      # Total height
-    Rt = 21.7     # Radius top
-    Rb = 17.5     # Radius bottom
-    Rd = Rt - Rb  # Radius difference
+    rd = RT - RB  # Radius difference
 
     return (
-        (Rd * d / H) / 2 + Rb
+        (rd * d / H) / 2 + RB
     )**2 * math.pi * d / 1000
