@@ -87,7 +87,7 @@ class AnalogInterface:
             if getattr(self, attr, None) is None:
                 err.append(attr)
         if err:
-            raise AssertionError(
+            raise AttributeError(
                 f"Analog interface subclass missing required attributes:\n- "
                 + '\n- '.join(err)
                 + '\n\n' + __doc__

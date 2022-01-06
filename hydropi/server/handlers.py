@@ -6,16 +6,16 @@ from hydropi.config import config
 from hydropi.interfaces.sensors import (
     DepthSensor,
     PressureSensor,
+    ECSensor,
     # PHSensor,
-    # ECSensor,
     # TemperatureSensor,
 )
 
 SENSORS = {
     'pressure': PressureSensor,
     'depth': DepthSensor,
+    'ec': ECSensor,
     # 'ph': PHSensor,
-    # 'ec': ECSensor,
     # 'temperature': TemperatureSensor,
 }
 
@@ -32,14 +32,6 @@ def get_status():
     if 'danger' in params.values():
         status = 'danger'
 
-    # Hard code fake depth until that's working
-    # params['depth'] = {
-    #     'text': 'Depth',
-    #     'status': 'normal',
-    #     'value': 30,
-    #     'percent': 0.45,
-    #     'unit': '%',
-    #   }
     return {
         'params': params,
         'text': status,
