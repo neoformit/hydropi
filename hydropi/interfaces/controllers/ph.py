@@ -16,16 +16,12 @@ class PHController(AbstractDoseController):
     0.5ml STRAIGHT pH down in 15L
         --> 10X dilution
             --> 5ml in 15L      # Lasts longer
-        --> 50X dilution
-            --> 25ml in 15L     # More accurate
+        --> 20X dilution
+            --> 10ml in 15L     # More accurate
 
     """
 
     PIN = config.PIN_PH_DOWN_PUMP
-
-    def deliver(self):
-        """Deliver pH down additive."""
-        # Set default dose to 5ml
-        super().deliver(ml=5)
+    DEFAULT_ML = 2
 
     # def balance()  # When pH sensor working

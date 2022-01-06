@@ -26,10 +26,12 @@ class AbstractDoseController(AbstractController):
 
     """
 
+    DEFAULT_ML = 10
     FLOW_RATE = 0.637  # Pump flow rate in ml/sec
 
-    def deliver(self, ml=10):
+    def deliver(self, ml=None):
         """Deliver the specified volume of additive."""
+        ml = ml or self.DEFAULT_ML
         logger.info(f"ACTION: {type(self).__name__} deliver {ml}ml")
 
         # Start mixing pump and delay

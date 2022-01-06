@@ -27,7 +27,7 @@ class AbstractController:
     def __init__(self):
         """Initialize interface."""
         if self.PIN is None:
-            raise ValueError(
+            raise AttributeError(
                 "Subclass of AbstractController must set self.PIN to"
                 " a valid output pin.")
         self.ID = ''.join(random.choices(string.ascii_lowercase, k=12))
