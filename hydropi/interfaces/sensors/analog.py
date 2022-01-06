@@ -92,8 +92,6 @@ class AnalogInterface:
                 + '\n- '.join(err)
                 + '\n\n' + __doc__
             )
-        if not self.V0_OFFSET:
-            logger.warning("No V0_OFFSET set: consider zeroing this device.")
 
     def _setup(self):
         """Create interface to MCP3008 chip."""
