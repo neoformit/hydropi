@@ -13,7 +13,11 @@ class PHSensor(AnalogInterface):
     CHANNEL = config.CHANNEL_PH
     TEXT = 'pH'
     UNIT = ''
-    MIN_UNITS = 0
-    MAX_UNITS = 14
-    MIN_VOLTS = 0
+    MIN_UNITS = 1.351
+    MAX_UNITS = 12
+    MIN_VOLTS = 1.8857
     MAX_VOLTS = 3.3
+    INVERSE = True
+    RANGE_LOWER = config.PH_MIN
+    RANGE_UPPER = config.PH_MAX
+    DECIMAL_POINTS = 2

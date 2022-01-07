@@ -54,6 +54,7 @@ class AnalogInterface:
     MAX_UNITS = None
     MIN_VOLTS = None
     MAX_VOLTS = None
+    INVERSE = False     # Set True if volts are inverse of value
 
     REQUIRED_ATTRIBUTES = (
         'CHANNEL',      # ADC channel to read (zero-indexed)
@@ -96,7 +97,7 @@ class AnalogInterface:
     def _setup(self):
         """Create interface to MCP3008 chip."""
         if config.DEVMODE:
-            logger.warning("DEVMODE: configure sensor without ADC interface")
+            logger.warning("DEVMODE: configure sensor with spoofed ADC")
             return
         self.mcp = MCP3008(
             cs=config.PIN_CS,
@@ -108,6 +109,9 @@ class AnalogInterface:
     @property
     def value(self):
         """Calculate current channel reading."""
+        if config.DEVMODE:
+            return random.uniform(self.DANGER_LOWER, self.DANGER_UPPER)
+
         try:
             # Sometimes RPi 'forgets' the pin IO state
             bits = self.mcp.read_adc(self.CHANNEL)
@@ -121,12 +125,14 @@ class AnalogInterface:
         volts_offset = volts + self.V0_OFFSET
         logger.debug(f"READ VOLTS OFFSET: {round(volts_offset, 6)}")
         ref_range = self.MAX_VOLTS - self.MIN_VOLTS
-        fraction = (volts_offset - self.MIN_VOLTS) / ref_range
+        if self.INVERSE:
+            fraction = ref_range / (volts_offset - self.MIN_VOLTS)
+        else:
+            fraction = (volts_offset - self.MIN_VOLTS) / ref_range
         return fraction * self.MAX_UNITS
 
     def read(self, n=1):
         """Return channel reading."""
-        self._setup()
         if n > 1:
             r = self._read_median(n)
         else:
@@ -159,13 +165,7 @@ class AnalogInterface:
     def get_status(cls):
         """Create interface and return current status data."""
         sensor = cls()
-        if config.DEVMODE:
-            logger.warning("DEVMODE: Return random reading")
-            current = round(
-                random.uniform(sensor.DANGER_LOWER, sensor.DANGER_UPPER),
-                sensor.DECIMAL_POINTS)
-        else:
-            current = sensor.read(n=5)
+        current = sensor.read(n=5)
 
         # Represent reading as a percent of absolute limits such that 0.5 is in
         # the middle of the optimal range (for display on dials).
