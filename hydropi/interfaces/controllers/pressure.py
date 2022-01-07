@@ -30,12 +30,14 @@ class PressurePumpController(AbstractController):
             psi = ps.read(n=5)
             if psi > config.MAX_PRESSURE_PSI:
                 return psi, 0
+
             # Reduce the duration based on remaining fill
             duration = round(
                 config.PRESSURE_REFILL_DURATION_SECONDS
                 * (config.MAX_PRESSURE_PSI - psi)
                 / (config.MAX_PRESSURE_PSI - config.MIN_PRESSURE_PSI)
             ) + 5  # Extra 5 seconds ensures that MAX is always reached
+
             logger.info(f"Current pressure: {psi}{PressureSensor.UNIT}")
             logger.info(f"Refill duration: {duration} seconds")
             return psi, duration
@@ -50,8 +52,8 @@ class PressurePumpController(AbstractController):
             self.on()
             time.sleep(duration)
             self.off()
-            cumulative_duration += duration
             time.sleep(5)
+            cumulative_duration += duration
             psi, duration = _next_duration()
 
         logger.info(

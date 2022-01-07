@@ -125,10 +125,9 @@ class AnalogInterface:
         volts_offset = volts + self.V0_OFFSET
         logger.debug(f"READ VOLTS OFFSET: {round(volts_offset, 6)}")
         ref_range = self.MAX_VOLTS - self.MIN_VOLTS
+        fraction = (volts_offset - self.MIN_VOLTS) / ref_range
         if self.INVERSE:
-            fraction = ref_range / (volts_offset - self.MIN_VOLTS)
-        else:
-            fraction = (volts_offset - self.MIN_VOLTS) / ref_range
+            fraction = 1 - fraction
         return fraction * self.MAX_UNITS
 
     def read(self, n=1):
