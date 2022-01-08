@@ -16,17 +16,25 @@ from .controllers import (
     PressurePumpController,
 )
 
-CONTROLLERS = [
-    ECController,
-    PHController,
-    MistController,
-    MixPumpController,
-    WaterController,
-    PressurePumpController,
-]
+SENSORS = {
+    'ec': ECSensor,
+    'ph': PHSensor,
+    'depth': DepthSensor,
+    'pressure': PressureSensor,
+    'temperature': TemperatureSensor,
+}
+
+CONTROLLERS = {
+    'ec': ECController,
+    'ph': PHController,
+    'mist': MistController,
+    'mix': MixPumpController,
+    'water': WaterController,
+    'pressure': PressurePumpController,
+}
 
 
 def cleanup():
     """Clean up on termination."""
-    for C in CONTROLLERS:
+    for C in CONTROLLERS.values():
         C.__del__()
