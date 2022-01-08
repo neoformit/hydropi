@@ -82,6 +82,14 @@ class Config:
         self.update(db_config)
 
 
+class STATUS:
+    """Status display options."""
+
+    NORMAL = 'normal'
+    WARNING = 'warning'
+    DANGER = 'danger'
+
+
 # Load defaults from yaml file
 config = Config('config.yml')
 

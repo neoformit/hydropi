@@ -2,7 +2,7 @@
 
 import os
 
-from hydropi.config import config
+from hydropi.config import config, STATUS
 from hydropi.interfaces.sensors import (
     DepthSensor,
     PressureSensor,
@@ -26,11 +26,16 @@ def get_status():
         k: v.get_status()
         for k, v in SENSORS.items()
     }
-    status = 'normal'
-    if 'warning' in params.values():
-        status = 'warning'
-    if 'danger' in params.values():
-        status = 'danger'
+    status_list = [
+        v['status']
+        for v in params.values()
+    ]
+    if STATUS.DANGER in status_list:
+        status = STATUS.DANGER
+    elif STATUS.WARNING in status_list:
+        status = STATUS.WARNING
+    else:
+        status = STATUS.NORMAL
 
     return {
         'params': params,

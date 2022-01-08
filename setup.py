@@ -25,7 +25,6 @@ setuptools.setup(
         'hydropi.process.check',
         'hydropi.server',
         'hydropi.server.handlers',
-        'hydropi.utils',
     ],
     zip_safe=True,
 )

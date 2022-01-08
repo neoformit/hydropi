@@ -28,17 +28,9 @@ except ModuleNotFoundError:
     print("WARNING: Can't import Pi packages - assume developer mode")
     MCP3008 = io = None
 
-from hydropi.config import config
+from hydropi.config import config, STATUS
 
 logger = logging.getLogger(__name__)
-
-
-class STATUS:
-    """Status options."""
-
-    NORMAL = 'normal'
-    WARNING = 'warning'
-    DANGER = 'danger'
 
 
 class AnalogInterface:
