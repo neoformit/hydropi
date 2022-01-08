@@ -1,4 +1,4 @@
-"""Utilities for interacting with the system."""
+"""Generic handlers for status, log files etc."""
 
 import os
 
