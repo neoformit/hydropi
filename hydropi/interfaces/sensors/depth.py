@@ -15,6 +15,7 @@ except ModuleNotFoundError:
     io = None
 
 from hydropi.config import config
+from .pressure import PressureSensor
 from .analog import STATUS
 
 logger = logging.getLogger(__name__)
@@ -72,7 +73,7 @@ class DepthSensor:
         io.cleanup(self.PIN_TRIG)
         io.cleanup(self.PIN_ECHO)
 
-    def read(self, n=1, depth=False, head=False):
+    def read(self, n=1, include_pressure=True, depth=False, head=False):
         """Return current depth in mm."""
         if n > 1:
             return self._read_median(n)
@@ -87,14 +88,17 @@ class DepthSensor:
             td = self._get_echo_time()
         if head:
             r = round(time_to_distance(td), None)
-            logger.info(f"DepthSensor READ: HEAD {r}mm (n={n})")
+            logger.info(f"{type(self).__name__} READ: HEAD {r}mm (n={n})")
             return r
         if depth:
             r = round(time_to_depth(td), None)
-            logger.info(f"DepthSensor READ: DEPTH {r}mm (n={n})")
+            logger.info(f"{type(self).__name__} READ: DEPTH {r}mm (n={n})")
             return r
+        if include_pressure:
+            ps = PressureSensor()
+            r += ps.get_tank_volume()
         r = round(time_to_volume(td), 1)
-        logger.info(f"DepthSensor READ: {r}{self.UNIT} (n={n})")
+        logger.info(f"{type(self).__name__} READ: {r}{self.UNIT} (n={n})")
         return r
 
     def _read_median(self, n):

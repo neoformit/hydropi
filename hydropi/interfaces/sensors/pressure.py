@@ -1,7 +1,11 @@
 """Interface for reading system pressure."""
 
+import logging
+
 from hydropi.config import config
 from .analog import AnalogInterface
+
+logger = logging.getLogger(__name__)
 
 
 class PressureSensor(AnalogInterface):
@@ -23,3 +27,15 @@ class PressureSensor(AnalogInterface):
     CHANNEL = config.CHANNEL_PRESSURE
     RANGE_LOWER = config.MIN_PRESSURE_PSI
     RANGE_UPPER = config.MAX_PRESSURE_PSI
+
+    def get_tank_volume(self):
+        """Estimate tank volume in litres based on the current pressure."""
+        psi = self.read(n=5)
+        litres = (
+            config.PRESSURE_TANK_VOLUME_L
+            * (psi / config.PRESSURE_TANK_BASE_PSI + 1)
+            / (psi / config.PRESSURE_TANK_BASE_PSI)
+        )
+        logger.debug(
+            f'{type(self).__name__} READ tank volume {litres:.2f} litres')
+        return litres
