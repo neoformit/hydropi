@@ -106,8 +106,7 @@ class AnalogInterface:
             clk=config.PIN_CLK,
         )
 
-    @property
-    def value(self):
+    def get_value(self, as_volts=False):
         """Calculate current channel reading."""
         if config.DEVMODE:
             return random.uniform(self.DANGER_LOWER, self.DANGER_UPPER)
@@ -124,8 +123,14 @@ class AnalogInterface:
         logger.debug(f"READ VOLTS: {round(volts, 6)}")
         volts_offset = volts + self.V0_OFFSET
         logger.debug(f"READ VOLTS OFFSET: {round(volts_offset, 6)}")
+        if as_volts:
+            return volts_offset
+        return self._volts_to_units(volts_offset)
+
+    def _volts_to_units(self, v):
+        """Calculate units from analog voltage."""
         ref_range = self.MAX_VOLTS - self.MIN_VOLTS
-        fraction = (volts_offset - self.MIN_VOLTS) / ref_range
+        fraction = (v - self.MIN_VOLTS) / ref_range
         if self.INVERSE:
             fraction = 1 - fraction
         return fraction * self.MAX_UNITS
@@ -135,7 +140,7 @@ class AnalogInterface:
         if n > 1:
             r = self._read_median(n)
         else:
-            r = self.value
+            r = self.get_value()
         rounded = round(r, self.DECIMAL_POINTS)
         logger.info(
             f"{type(self).__name__}"
@@ -146,7 +151,7 @@ class AnalogInterface:
         """Return median channel reading from <n> samples."""
         readings = []
         for i in range(n):
-            readings.append(self.value)
+            readings.append(self.get_value())
             time.sleep(self.MEDIAN_INTERVAL_SECONDS)
         return statistics.median(readings)
 
