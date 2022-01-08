@@ -40,6 +40,7 @@ class DepthSensor:
     DECIMAL_POINTS = 1
     PIN_TRIG = config.PIN_DEPTH_TRIG
     PIN_ECHO = config.PIN_DEPTH_ECHO
+    MEDIAN_INTERVAL_SECONDS = 0.05 or config.MEDIAN_INTERVAL_SECONDS
 
     def __init__(self):
         """Initialise interface."""
@@ -77,15 +78,7 @@ class DepthSensor:
         """Return current depth in mm."""
         if n > 1:
             return self._read_median(n)
-        if config.DEVMODE:
-            logger.warning(
-                "DEVMODE: configure depth without ultrasonic interface")
-            td = random.uniform(
-                0.0001,
-                config.DEPTH_MAXIMUM_MM / 10 / SONIC_SPEED
-            )
-        else:
-            td = self._get_echo_time()
+        td = self._get_echo_time()
         if head:
             r = round(time_to_distance(td), None)
             logger.info(f"{type(self).__name__} READ: HEAD {r}mm (n={n})")
@@ -94,10 +87,14 @@ class DepthSensor:
             r = round(time_to_depth(td), None)
             logger.info(f"{type(self).__name__} READ: DEPTH {r}mm (n={n})")
             return r
+        vol = time_to_volume(td)
+        logger.debug(
+            f"{type(self).__name__} READ:"
+            f" tank volume {round(vol)} litres")
         if include_pressure:
             ps = PressureSensor()
-            r += ps.get_tank_volume()
-        r = round(time_to_volume(td), 1)
+            vol += ps.get_tank_volume()
+        r = round(vol, 1)
         logger.info(f"{type(self).__name__} READ: {r}{self.UNIT} (n={n})")
         return r
 
@@ -106,13 +103,22 @@ class DepthSensor:
         readings = []
         for i in range(n):
             readings.append(self.read())
-            time.sleep(config.MEDIAN_INTERVAL_SECONDS)
+            time.sleep(self.MEDIAN_INTERVAL_SECONDS)
         r = statistics.median(readings)
         logger.debug(f"{type(self).__name__} READ: {r}{self.UNIT} (n={n})")
         return r
 
     def _get_echo_time(self):
         """Collect a reading from the ultrasonic sensor."""
+        if config.DEVMODE:
+            logger.warning(
+                "DEVMODE: spoof ultrasonic reading")
+            mu = 6.5 * config.VOLUME_TARGET_L / SONIC_SPEED
+            return random.normalvariate(
+                mu,
+                mu * config.VOLUME_TOLERANCE,
+            )
+
         io.output(self.PIN_TRIG, 1)
         time.sleep(0.00001)
         io.output(self.PIN_TRIG, 0)

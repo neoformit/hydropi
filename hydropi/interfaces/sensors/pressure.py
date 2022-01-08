@@ -30,10 +30,10 @@ class PressureSensor(AnalogInterface):
 
     def get_tank_volume(self):
         """Estimate tank volume in litres based on the current pressure."""
-        psi = self.read(n=5)
+        psi = self.read()
         litres = (
             config.PRESSURE_TANK_VOLUME_L
-            * (psi / config.PRESSURE_TANK_BASE_PSI + 1)
+            * (psi / config.PRESSURE_TANK_BASE_PSI - 1)
             / (psi / config.PRESSURE_TANK_BASE_PSI)
         )
         logger.debug(
