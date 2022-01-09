@@ -1,14 +1,26 @@
-"""Hardware configuration.
+"""Hardware and parameter configuration.
 
 These are default values that may be overwritten at runtime.
 
-- Digital io passes through pins (gpio header pins)
-- Analog io passes through channels (MCP3008 chip interface)
+- Digital io passes through PINS (i.e. RPi GPIO header pins)
+- Analog signals are read through CHANNELS (MCP3008 chip interface)
+- Controllers are actioned through pins, which hit relay channels
+- Physical parameters (pressure, pH etc) are also set here. These may be
+  exposed for users to manage.
 
-Perhaps makes sense to conditionally read/set config from SQLite connection at
-runtime, if one exists. Can share a connection with the web app. But need to
-access config through an interface `config.get(PARAM)` for this to work
-properly.
+Config is initialized from a config.yml file which must exist in the runtime
+directory. Optionally, this file contains a DATABASE section with connection
+parameters for a SQLite database. If exists, this connection will be tried
+automatically. If successful, config will be written to the DB (if it
+doesn't yet exist) and future calls for config attributes will be fetched from
+the database. This allows for 'live config', where the application can update
+config on-the-fly. Which is great for when users want to modify config through
+a web interface.
+
+From here, config.yml is not redundant. It can be used to remove old keys from
+the database and set new ones (so that covers key renaming... although the
+value will revert to whatever is in config.yml). So though the values may be
+different, it should reflect the schema of the database table.
 """
 
 import os
@@ -49,7 +61,7 @@ class Config:
 
         Return attribute preferentially from database, then YAML file.
 
-        WARNING: this can be the source of some freaky bugs!
+        WARNING: this can cause some freaky bugs!
         """
         if self.db and key in self.db.keys():
             return self.db.get(key)
@@ -57,7 +69,7 @@ class Config:
             return self.yml[key]
 
         # Let AttributeError propagate
-        super(Config, self).__getattribute__(key)
+        self.__getattribute__(key)
 
     def set(self, key, value):
         """Set config value by key."""
