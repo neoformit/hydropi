@@ -40,40 +40,31 @@ class Config:
         self.yml = self.parse(fname)
         configure_logger(self)
 
-        if hasattr(self, 'DATABASE'):
+        if 'DATABASE' in self.yml:
             self.db = DB(self)
             self.sync_db()
 
     def __getattr__(self, key):
         """Retrieve config value by key.
 
-        This can be the source of some freaky bugs.
+        Return attribute preferentially from database, then YAML file.
+
+        WARNING: this can be the source of some freaky bugs!
         """
-        # If self has this attribute, return from there first
-        if hasattr(super(Config, self), key):
-            return super(Config, self).__getattribute__(key)
+        if self.db and key in self.db.keys():
+            return self.db.get(key)
+        if key in self.yml:
+            return self.yml[key]
 
-        # For referencing yml below, before defined in __init__
-        if hasattr(super(Config, self), 'yml'):
-            yml = super(Config, self).__getattribute__('yml')
-        else:
-            yml = {}
+        # Let AttributeError propagate
+        super(Config, self).__getattribute__(key)
 
-        # Get database reference
-        db = super(Config, self).__getattribute__('db')
-
-        # Return attribute preferentially from database, then yml
-        if not db:
-            if key not in yml:
-                return super(Config, self).__getattribute__(key)
-            return yml[key]
-        return db.get(key)
-
-    def __setattr__(self, key, value):
+    def set(self, key, value):
         """Set config value by key."""
         if self.db:
             self.db.set(key, value)
-        super(Config, self).__setattr__(key, value)
+        else:
+            logger.warning("Can't set live config without DB.")
 
     def parse(self, fname):
         """Parse and interpret the config data.
@@ -85,22 +76,18 @@ class Config:
         if yml['CONFIG_DIR'].startswith('~'):
             yml['CONFIG_DIR'] = os.path.expanduser(yml['CONFIG_DIR'])
         yml['TEMP_DIR'] = os.path.join(yml['CONFIG_DIR'], 'tmp')
-        for k, v in yml.items():
-            setattr(self, k, v)
         return yml
 
     def update(self, new):
-        """Update config from dict.
-
-        Do not allow setting new attributes, only updates existing.
-        Only useful with a DB connection.
-        """
+        """Update config from dict."""
         if not self.db:
             return logger.error("Live config update requires DB connection.")
 
+        db_keys = self.db.keys()
+
         for k, v in new.items():
-            if hasattr(self, k):
-                setattr(self, k, v)
+            if k in db_keys:
+                self.set(k, v)
             else:
                 logger.error(
                     f"Trying to set unreferenced config attribute {k}")
@@ -117,7 +104,7 @@ class Config:
         db_absent_keys = yml_keys - db_keys
         db_redundant_keys = db_keys - yml_keys
         for k in db_absent_keys:
-            setattr(self, k, self.yml[k])
+            self.set(k, self.yml[k])
         for k in db_redundant_keys:
             self.db.rm(k)
 

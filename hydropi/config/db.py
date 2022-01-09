@@ -5,6 +5,26 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+TYPECAST = {
+    'int': int,
+    'str': str,
+    'bool': bool,
+    'float': float,
+}
+
+
+def get_sql_value_type(key, value):
+    """Return value SQL string and type."""
+    value_type = type(value).__name__
+    assert value_type in TYPECAST, (
+        "Config value type not recognised.\n"
+        f"{key}: {value_type}")
+    if type(value) == str:
+        value = f"'{value}'"
+    if type(value) == bool:
+        value = int(value)
+    return value, value_type
+
 
 class DB:
     """Database interface for access to dynamic config."""
@@ -22,34 +42,48 @@ class DB:
         self.CONFIG_TABLE_NAME = config.DATABASE['CONFIG_TABLE_NAME']
         self.CONFIG_KEY_FIELD = config.DATABASE['CONFIG_KEY_FIELD']
         self.CONFIG_VALUE_FIELD = config.DATABASE['CONFIG_VALUE_FIELD']
+        self.CONFIG_TYPE_FIELD = config.DATABASE['CONFIG_TYPE_FIELD']
         if assert_schema:
             self.assert_schema()
 
+    def execute(self, sql):
+        """Execute SQL and log SQL statement if error."""
+        try:
+            self.cursor.execute(sql)
+        except Exception as exc:
+            logger.error(f'SQL: {sql}')
+            raise exc
+
     def keys(self):
         """Return list of keys in config table."""
-        self.cursor.execute(self.sql_get_config_keys())
+        self.execute(self.sql_get_config_keys())
         keys = self.cursor.fetchall()
         return [x[0] for x in keys]
 
     def get(self, key):
         """Return value for given field."""
-        self.cursor.execute(self.sql_get_key(key))
-        v = self.cursor.fetchall()
-        if v:
-            return v[0][0]
+        self.execute(self.sql_get_key(key))
+        r = self.cursor.fetchall()
+        if r:
+            v, type = r[0]
+            return TYPECAST[type](v)
 
     def set(self, key, value):
         """Set value for given field."""
         if not self.get(key):
             sql = self.sql_add_key(key, value)
+            print("SQL ADD KEY:")
+            print(sql)
         else:
             sql = self.sql_set_key(key, value)
-        self.cursor.execute(sql)
+            print("SQL SET KEY:")
+            print(sql)
+        self.execute(sql)
         return self.connection.commit()
 
     def rm(self, key):
         """Remove a config key from the database."""
-        self.cursor.execute(self.sql_rm_key(key))
+        self.execute(self.sql_rm_key(key))
         self.connection.commit()
 
     def table_exists(self, name):
@@ -61,13 +95,13 @@ class DB:
         if not self.connection:
             logger.debug("DB.write_row: could not connect to SQLite database")
             return
-        self.cursor.execute(self.sql_write_row(data))
+        self.execute(self.sql_write_row(data))
         return self.connection.commit()
 
     def assert_schema(self):
         """Ensure that tables match config."""
         try:
-            self.cursor.execute(self.sql_get_table_columns(
+            self.execute(self.sql_get_table_columns(
                 self.CONFIG_TABLE_NAME,
                 columns=(self.CONFIG_KEY_FIELD, self.CONFIG_VALUE_FIELD)))
         except Exception:
@@ -77,23 +111,30 @@ class DB:
                 f"CONFIG_KEY_FIELD: {self.CONFIG_KEY_FIELD}\n"
                 f"CONFIG_TABLE_NAME: {self.CONFIG_TABLE_NAME}")
         try:
-            self.cursor.execute(self.sql_get_table_columns(
+            sql = self.sql_get_table_columns(
                 self.DATALOG_TABLE_NAME,
-                columns=('id')))
-        except Exception:
-            raise ValueError(
+                columns=['id'])
+            self.execute(sql)
+        except Exception as exc:
+            msg = (
                 "Could not establish datalog table from database:\n"
                 f"DATALOG_TABLE_NAME: {self.DATALOG_TABLE_NAME}")
+            if 'no such column' in str(exc):
+                msg += "\n\nColumn mismatch. See error above from sqlite3."
+            raise ValueError(msg)
 
     def sql_add_key(self, key, value):
         """Generate SQL to add a new config key: value pair."""
-        if type(value) == str:
-            value = f"'{value}'"
+        value, value_type = get_sql_value_type(key, value)
         return (
             f"""
             INSERT into {self.CONFIG_TABLE_NAME}
-            ('{self.CONFIG_KEY_FIELD}', '{self.CONFIG_VALUE_FIELD}')
-            VALUES ('{key}', {value})
+            (
+                '{self.CONFIG_KEY_FIELD}',
+                '{self.CONFIG_VALUE_FIELD}',
+                '{self.CONFIG_TYPE_FIELD}'
+            )
+            VALUES ('{key}', {value}, '{value_type}')
             """
         )
 
@@ -101,7 +142,7 @@ class DB:
         """Generate SQL to fetch value for config key."""
         return (
             f"""
-            SELECT {self.CONFIG_VALUE_FIELD}
+            SELECT {self.CONFIG_VALUE_FIELD}, {self.CONFIG_TYPE_FIELD}
             from {self.CONFIG_TABLE_NAME}
             WHERE {self.CONFIG_KEY_FIELD} = '{key}'
             """
@@ -109,12 +150,12 @@ class DB:
 
     def sql_set_key(self, key, value):
         """Generate SQL to fetch value for config key."""
-        if type(value) == str:
-            value = f"'{value}'"
+        value, value_type = get_sql_value_type(key, value)
         return (
             f"""
             UPDATE {self.CONFIG_TABLE_NAME}
-            SET {self.CONFIG_VALUE_FIELD} = {value}
+            SET {self.CONFIG_VALUE_FIELD} = {value},
+                {self.CONFIG_TYPE_FIELD} = '{value_type}'
             WHERE {self.CONFIG_KEY_FIELD} = '{key}'
             """
         )
