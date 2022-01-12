@@ -3,7 +3,7 @@
 import sqlite3
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hydropi')
 
 TYPECAST = {
     'int': int,
@@ -13,26 +13,14 @@ TYPECAST = {
 }
 
 
-def get_sql_value_type(key, value):
-    """Return value SQL string and type."""
-    value_type = type(value).__name__
-    assert value_type in TYPECAST, (
-        "Config value type not recognised.\n"
-        f"{key}: {value_type}")
-    if type(value) == str:
-        value = f"'{value}'"
-    if type(value) == bool:
-        value = int(value)
-    return value, value_type
-
-
 class DB:
     """Database interface for access to dynamic config."""
 
     def __init__(self, config, assert_schema=True):
         """Initiate database connection."""
         try:
-            self.connection = sqlite3.connect(config.DATABASE['SQLITE_PATH'])
+            self.SQLITE_PATH = config.DATABASE['SQLITE_PATH']
+            self.connection = sqlite3.connect(self.SQLITE_PATH)
             self.cursor = self.connection.cursor()
         except Exception as exc:
             logger.error("Could not connect to SQLite database")
@@ -43,6 +31,7 @@ class DB:
         self.CONFIG_KEY_FIELD = config.DATABASE['CONFIG_KEY_FIELD']
         self.CONFIG_VALUE_FIELD = config.DATABASE['CONFIG_VALUE_FIELD']
         self.CONFIG_TYPE_FIELD = config.DATABASE['CONFIG_TYPE_FIELD']
+        self.config = config
         if assert_schema:
             self.assert_schema()
 
@@ -50,34 +39,48 @@ class DB:
         """Execute SQL and log SQL statement if error."""
         try:
             self.cursor.execute(sql)
+        except sqlite3.ProgrammingError:
+            # Probably called in a thread - need a fresh DB connection
+            self.connection = sqlite3.connect(self.SQLITE_PATH)
+            self.cursor = self.connection.cursor()
+            self.cursor.execute(sql)
         except Exception as exc:
             logger.error(f'SQL: {sql}')
             raise exc
 
+    def fetchall(self):
+        """Wrap cursor.fetchall to catch threading errors."""
+        try:
+            data = self.cursor.fetchall()
+        except sqlite3.ProgrammingError:
+            # Probably called in a thread - need a fresh DB connection
+            self.connection = sqlite3.connect(self.SQLITE_PATH)
+            self.cursor = self.connection.cursor()
+            data = self.cursor.fetchall()
+        return data
+
     def keys(self):
         """Return list of keys in config table."""
         self.execute(self.sql_get_config_keys())
-        keys = self.cursor.fetchall()
+        keys = self.fetchall()
         return [x[0] for x in keys]
 
     def get(self, key):
         """Return value for given field."""
         self.execute(self.sql_get_key(key))
-        r = self.cursor.fetchall()
+        r = self.fetchall()
         if r:
-            v, type = r[0]
-            return TYPECAST[type](v)
+            v, type_str = r[0]
+            return TYPECAST[type_str](v)
 
     def set(self, key, value):
         """Set value for given field."""
         if not self.get(key):
             sql = self.sql_add_key(key, value)
-            print("SQL ADD KEY:")
-            print(sql)
+            logger.debug("SQL ADD KEY:\n" + sql)
         else:
             sql = self.sql_set_key(key, value)
-            print("SQL SET KEY:")
-            print(sql)
+            logger.debug("SQL SET KEY:\n" + sql)
         self.execute(sql)
         return self.connection.commit()
 
@@ -123,9 +126,29 @@ class DB:
                 msg += "\n\nColumn mismatch. See error above from sqlite3."
             raise ValueError(msg)
 
+    def get_sql_value_type(self, key, value):
+        """Return value SQL string and type."""
+        type_str = self.get_key_type(key) or type(value).__name__
+        assert type_str in TYPECAST, (
+            "Config value type not recognised.\n"
+            f"{key}: {type_str}")
+        if type(value) == str:
+            value = f"'{value}'"
+        if type(value) == bool:
+            value = int(value)
+        return value, type_str
+
+    def get_key_type(self, key):
+        """Return type of config key from database."""
+        self.execute(self.sql_get_key(key))
+        r = self.fetchall()
+        if r:
+            v, type_str = r[0]
+            return type_str
+
     def sql_add_key(self, key, value):
         """Generate SQL to add a new config key: value pair."""
-        value, value_type = get_sql_value_type(key, value)
+        value, value_type = self.get_sql_value_type(key, value)
         return (
             f"""
             INSERT into {self.CONFIG_TABLE_NAME}
@@ -150,7 +173,7 @@ class DB:
 
     def sql_set_key(self, key, value):
         """Generate SQL to fetch value for config key."""
-        value, value_type = get_sql_value_type(key, value)
+        value, value_type = self.get_sql_value_type(key, value)
         return (
             f"""
             UPDATE {self.CONFIG_TABLE_NAME}
