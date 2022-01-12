@@ -8,7 +8,7 @@ logger = logging.getLogger('hydropi')
 TYPECAST = {
     'int': int,
     'str': str,
-    'bool': bool,
+    'bool': lambda x: bool(int(x)),
     'float': float,
 }
 
