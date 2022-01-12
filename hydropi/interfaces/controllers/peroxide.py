@@ -5,7 +5,7 @@ import logging
 from hydropi.config import config
 from .dose import AbstractDoseController
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hydropi')
 
 
 class PeroxideController(AbstractDoseController):

@@ -9,7 +9,7 @@ from hydropi.config import config
 from .controller import AbstractController
 from .mix import MixPumpController
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hydropi')
 
 
 class AbstractDoseController(AbstractController):

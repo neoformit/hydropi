@@ -7,7 +7,7 @@ from hydropi.config import config
 from hydropi.interfaces.sensors.ec import ECSensor
 from hydropi.interfaces.controllers.ec import ECController
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hydropi')
 
 
 def level():

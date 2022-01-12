@@ -30,7 +30,7 @@ except ModuleNotFoundError:
 
 from hydropi.config import config, STATUS
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hydropi')
 
 
 class AnalogInterface:

@@ -18,7 +18,7 @@ from hydropi.config import config
 from .pressure import PressureSensor
 from .analog import STATUS
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hydropi')
 
 SONIC_SPEED = 34300  # cm/sec
 H = 50.0      # Total height of nutrient bin (reservoir)

@@ -8,7 +8,7 @@ from hydropi.config import config
 from hydropi.process.check.time import is_quiet_time
 from hydropi.interfaces.controllers.mist import MistController
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hydropi')
 
 
 def mist():

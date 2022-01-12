@@ -8,7 +8,7 @@ from hydropi.interfaces.sensors.pressure import PressureSensor
 
 from .controller import AbstractController
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hydropi')
 
 
 class PressurePumpController(AbstractController):

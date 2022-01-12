@@ -8,7 +8,7 @@ import logging
 from hydropi.config import config
 from .analog import AnalogInterface
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hydropi')
 
 
 class PHSensor(AnalogInterface):

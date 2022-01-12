@@ -1,7 +1,10 @@
 """Handlers for interacting with hydropi config."""
 
+import logging
 from hydropi.config import config
 from hydropi import interfaces
+
+logger = logging.getLogger('hydropi')
 
 EXPOSED_CONFIG = {
     'general': (
@@ -148,4 +151,5 @@ def get(name=None):
 
 def set(data):
     """Update config with given data."""
+    logger.debug(f"Request received: config.set | DATA: {data}")
     config.update(data)

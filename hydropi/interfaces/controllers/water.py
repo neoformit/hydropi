@@ -8,7 +8,7 @@ from .controller import AbstractController
 
 from hydropi.interfaces.sensors.depth import DepthSensor
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hydropi')
 
 
 class WaterController(AbstractController):

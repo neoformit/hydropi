@@ -7,7 +7,7 @@ from hydropi.config import config
 from hydropi.interfaces.sensors.depth import DepthSensor
 from hydropi.interfaces.controllers.water import WaterController
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hydropi')
 
 
 def depth():

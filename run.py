@@ -21,7 +21,7 @@ from hydropi.process.maintenance import sweep
 import signal
 signal.signal(signal.SIGINT, signal.default_int_handler)
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hydropi')
 
 
 def main():

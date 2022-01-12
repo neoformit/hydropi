@@ -8,7 +8,7 @@ from hydropi.process.check.time import is_quiet_time
 from hydropi.interfaces.sensors.pressure import PressureSensor
 from hydropi.interfaces.controllers.pressure import PressurePumpController
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hydropi')
 
 
 def level():

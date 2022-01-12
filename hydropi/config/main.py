@@ -31,7 +31,7 @@ import logging
 from .db import DB
 from .logconf import configure as configure_logger
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hydropi')
 
 
 class Config:
@@ -92,10 +92,12 @@ class Config:
 
     def update(self, new):
         """Update config from dict."""
+        logger.debug(f"Called config.update with data: {new}")
         if not self.db:
             return logger.error("Live config update requires DB connection.")
 
         db_keys = self.db.keys()
+        # logger.debug(f"Database keys exposed for update: {db_keys}")
 
         for k, v in new.items():
             if k in db_keys:

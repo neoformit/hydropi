@@ -7,7 +7,7 @@ from hydropi.config import config
 from hydropi.interfaces.sensors.ph import PHSensor
 from hydropi.interfaces.controllers.ph import PHController
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hydropi')
 
 
 def level():
