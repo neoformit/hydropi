@@ -156,8 +156,8 @@ EXPOSED_CONFIG = {
 }
 
 DB_CONFIG_KEYS = [
-    v['key']
-    for v in EXPOSED_CONFIG.values()
+    k['key'] for keys in EXPOSED_CONFIG.values()
+    for k in keys
 ]
 
 

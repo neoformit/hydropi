@@ -1,6 +1,7 @@
 """Manage optional database interface for dynamic app configuration."""
 
 import os
+import time
 import sqlite3
 import logging
 import fasteners
@@ -28,9 +29,7 @@ class DB:
         """Initiate database connection."""
         # self.lock = threading.Lock()
         self.SQLITE_PATH = config.DATABASE['SQLITE_PATH']
-        # self.connection = sqlite3.connect(self.SQLITE_PATH)
-        # self.cursor = self.connection.cursor()
-        self.lock = fasteners.InterProcessLock(
+        self._lock = fasteners.InterProcessLock(
             os.path.join(config.TEMP_DIR, 'thread.lock')
         )
 
@@ -43,6 +42,25 @@ class DB:
         if assert_schema:
             self._assert_schema()
 
+    # Database locking operations
+    # -------------------------------------------------------------------------
+    def get_lock(self):
+        """Acquire a lock on the database."""
+        for i in range(10):
+            # Try a maximum of 10 times
+            try:
+                return self._lock.acquire()
+            except ValueError:
+                time.sleep(0.01)
+        return self._lock.acquire()
+
+    def release_lock(self):
+        """Acquire a lock on the database."""
+        try:
+            return self._lock.release()
+        except Exception as exc:
+            logger.warning(str(exc))
+
     # SQL Execution
     # -------------------------------------------------------------------------
 
@@ -51,31 +69,33 @@ class DB:
 
         Create new database connections using a global lock on the sqlite DB.
         """
-        with self.lock:
-            try:
-                connection = sqlite3.connect(self.SQLITE_PATH)
-                cursor = connection.cursor()
-                cursor.execute(sql)
-                connection.commit()
-            except Exception as exc:
-                logger.error(f'SQL: {sql}')
-                raise exc
-            finally:
-                connection.close()
+        self.get_lock()
+        try:
+            connection = sqlite3.connect(self.SQLITE_PATH)
+            cursor = connection.cursor()
+            cursor.execute(sql)
+            connection.commit()
+        except Exception as exc:
+            logger.error(f'SQL: {sql}')
+            raise exc
+        finally:
+            connection.close()
+            self.release_lock()
 
     def select(self, sql):
         """Perform a SQL select and return the data.
 
         Create new database connections using a global lock on the sqlite DB.
         """
-        with self.lock:
-            try:
-                connection = sqlite3.connect(self.SQLITE_PATH)
-                cursor = connection.cursor()
-                cursor.execute(sql)
-                data = cursor.fetchall()
-            finally:
-                connection.close()
+        self.get_lock()
+        try:
+            connection = sqlite3.connect(self.SQLITE_PATH)
+            cursor = connection.cursor()
+            cursor.execute(sql)
+            data = cursor.fetchall()
+        finally:
+            connection.close()
+            self.release_lock()
 
         return data
 
@@ -103,12 +123,10 @@ class DB:
             sql = self.sql_set_key(key, value)
             logger.debug("SQL SET KEY:\n" + sql)
         self.execute(sql)
-        return self.connection.commit()
 
     def rm(self, key):
         """Remove a config key from the database."""
         self.execute(self.sql_rm_key(key))
-        self.connection.commit()
 
     def table_exists(self, name):
         """Return True if table exists in DB."""
@@ -116,11 +134,11 @@ class DB:
 
     def log_data(self, data):
         """Write current readings to the database."""
-        if not self.connection:
-            logger.debug("DB.write_row: could not connect to SQLite database")
-            return
-        self.execute(self.sql_write_row(data))
-        return self.connection.commit()
+        try:
+            self.execute(self.sql_write_row(data))
+        except Exception:
+            logger.error(
+                "DB.log_data: could not connect to SQLite database")
 
     # Assertions
     # -------------------------------------------------------------------------
