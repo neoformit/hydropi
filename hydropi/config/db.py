@@ -124,12 +124,13 @@ class DB:
             self.execute(self.sql_get_table_columns(
                 self.CONFIG_TABLE_NAME,
                 columns=(self.CONFIG_KEY_FIELD, self.CONFIG_VALUE_FIELD)))
-        except Exception:
+        except Exception as exc:
             raise SchemaError(
                 "Could not establish config table from database:\n"
                 f"CONFIG_VALUE_FIELD: {self.CONFIG_VALUE_FIELD}\n"
                 f"CONFIG_KEY_FIELD: {self.CONFIG_KEY_FIELD}\n"
-                f"CONFIG_TABLE_NAME: {self.CONFIG_TABLE_NAME}")
+                f"CONFIG_TABLE_NAME: {self.CONFIG_TABLE_NAME}"
+                f"\nException:\n{exc}")
         try:
             sql = self.sql_get_table_columns(
                 self.DATALOG_TABLE_NAME,
