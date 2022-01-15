@@ -1,6 +1,7 @@
 """Handlers for interacting with hydropi config."""
 
 import logging
+from pprint import pprint
 from hydropi.config import config
 from hydropi import interfaces
 
@@ -21,7 +22,7 @@ EXPOSED_CONFIG = {
         {
             'key': 'SWEEP_CYCLE_MINUTES',
             'type': 'number',
-            'help': 'Status will be checked and adjusted every N minutes',
+            'help': 'Interval between status check and balance (minutes)',
         },
     ),
     'ec': (
@@ -48,14 +49,12 @@ EXPOSED_CONFIG = {
         {
             'key': 'PH_MIN',
             'type': 'number',
-            'help': ('Lower limit of target pH range'
-                     f' ({interfaces.PHSensor.UNIT})'),
+            'help': 'Lower limit of target pH range',
         },
         {
             'key': 'PH_MAX',
             'type': 'number',
-            'help': ('Upper limit of target pH range'
-                     f' ({interfaces.PHSensor.UNIT})'),
+            'help': 'Upper limit of target pH range',
         },
         {
             'key': 'PH_ADDITION_ML',
@@ -91,7 +90,7 @@ EXPOSED_CONFIG = {
         {
             'key': 'MIX_ADDITION_DELAY_SECONDS',
             'type': 'number',
-            'help': 'Duration of mixing before an addition is made',
+            'help': 'Duration of mixing before an addition is made (seconds)',
         },
     ),
     'depth': (
@@ -144,6 +143,8 @@ def get(name=None):
             } for param in params
         ] for g, params in EXPOSED_CONFIG.items()
     }
+    print("hydropi.handlers.config.get() data:")
+    pprint(data)
     if name:
         return data[name]
     return data

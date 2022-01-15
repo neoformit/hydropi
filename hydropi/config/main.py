@@ -25,7 +25,6 @@ different, it should reflect the schema of the database table.
 
 import os
 import yaml
-import shutil
 import logging
 
 from .db import DB
@@ -50,6 +49,8 @@ class Config:
                 '/blob/main/config.yml.sample')
 
         self.yml = self.parse(fname)
+        if not os.path.exists(self.TEMP_DIR):
+            os.makedirs(config.TEMP_DIR)
         configure_logger(self)
 
         if 'DATABASE' in self.yml:
@@ -133,10 +134,3 @@ class STATUS:
 
 # Load defaults from yaml file
 config = Config('config.yml')
-
-# Build dirs
-if not os.path.exists(config.CONFIG_DIR):
-    os.makedirs(config.CONFIG_DIR)
-if os.path.exists(config.TEMP_DIR):
-    shutil.rmtree(config.TEMP_DIR)
-    os.mkdir(config.TEMP_DIR)

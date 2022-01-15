@@ -1,9 +1,17 @@
 """Manage optional database interface for dynamic app configuration."""
 
+import os
 import sqlite3
 import logging
+import fasteners
+# import threading
 
 logger = logging.getLogger('hydropi')
+
+# TODO: Need to make thread safe
+# https://stackoverflow.com/questions/26629080/python-and-sqlite3-programmingerror-recursive-use-of-cursors-not-allowed#
+# Didn't work... probably not referencing the same lock object.
+# Maybe try with a lock file instead?
 
 TYPECAST = {
     'int': int,
@@ -18,13 +26,13 @@ class DB:
 
     def __init__(self, config, assert_schema=True):
         """Initiate database connection."""
-        try:
-            self.SQLITE_PATH = config.DATABASE['SQLITE_PATH']
-            self.connection = sqlite3.connect(self.SQLITE_PATH)
-            self.cursor = self.connection.cursor()
-        except Exception as exc:
-            logger.error("Could not connect to SQLite database")
-            raise exc
+        # self.lock = threading.Lock()
+        self.SQLITE_PATH = config.DATABASE['SQLITE_PATH']
+        # self.connection = sqlite3.connect(self.SQLITE_PATH)
+        # self.cursor = self.connection.cursor()
+        self.lock = fasteners.InterProcessLock(
+            os.path.join(config.TEMP_DIR, 'thread.lock')
+        )
 
         self.DATALOG_TABLE_NAME = config.DATABASE['DATALOG_TABLE_NAME']
         self.CONFIG_TABLE_NAME = config.DATABASE['CONFIG_TABLE_NAME']
@@ -33,42 +41,55 @@ class DB:
         self.CONFIG_TYPE_FIELD = config.DATABASE['CONFIG_TYPE_FIELD']
         self.config = config
         if assert_schema:
-            self.assert_schema()
+            self._assert_schema()
+
+    # SQL Execution
+    # -------------------------------------------------------------------------
 
     def execute(self, sql):
-        """Execute SQL and log SQL statement if error."""
-        try:
-            self.cursor.execute(sql)
-        except sqlite3.ProgrammingError:
-            # Probably called in a thread - need a fresh DB connection
-            self.connection = sqlite3.connect(self.SQLITE_PATH)
-            self.cursor = self.connection.cursor()
-            self.cursor.execute(sql)
-        except Exception as exc:
-            logger.error(f'SQL: {sql}')
-            raise exc
+        """Execute SQL and log SQL statement if error.
 
-    def fetchall(self):
-        """Wrap cursor.fetchall to catch threading errors."""
-        try:
-            data = self.cursor.fetchall()
-        except sqlite3.ProgrammingError:
-            # Probably called in a thread - need a fresh DB connection
-            self.connection = sqlite3.connect(self.SQLITE_PATH)
-            self.cursor = self.connection.cursor()
-            data = self.cursor.fetchall()
+        Create new database connections using a global lock on the sqlite DB.
+        """
+        with self.lock:
+            try:
+                connection = sqlite3.connect(self.SQLITE_PATH)
+                cursor = connection.cursor()
+                cursor.execute(sql)
+                connection.commit()
+            except Exception as exc:
+                logger.error(f'SQL: {sql}')
+                raise exc
+            finally:
+                connection.close()
+
+    def select(self, sql):
+        """Perform a SQL select and return the data.
+
+        Create new database connections using a global lock on the sqlite DB.
+        """
+        with self.lock:
+            try:
+                connection = sqlite3.connect(self.SQLITE_PATH)
+                cursor = connection.cursor()
+                cursor.execute(sql)
+                data = cursor.fetchall()
+            finally:
+                connection.close()
+
         return data
+
+    # Queries
+    # -------------------------------------------------------------------------
 
     def keys(self):
         """Return list of keys in config table."""
-        self.execute(self.sql_get_config_keys())
-        keys = self.fetchall()
+        keys = self.select(self.sql_get_config_keys())
         return [x[0] for x in keys]
 
     def get(self, key):
         """Return value for given field."""
-        self.execute(self.sql_get_key(key))
-        r = self.fetchall()
+        r = self.select(self.sql_get_key(key))
         if r:
             v, type_str = r[0]
             return TYPECAST[type_str](v)
@@ -101,7 +122,10 @@ class DB:
         self.execute(self.sql_write_row(data))
         return self.connection.commit()
 
-    def assert_schema(self):
+    # Assertions
+    # -------------------------------------------------------------------------
+
+    def _assert_schema(self):
         """Ensure that tables match config."""
         try:
             self.execute(self.sql_get_table_columns(
@@ -126,6 +150,9 @@ class DB:
                 msg += "\n\nColumn mismatch. See error above from sqlite3."
             raise ValueError(msg)
 
+    # SQL generation
+    # -------------------------------------------------------------------------
+
     def get_sql_value_type(self, key, value):
         """Return value SQL string and type."""
         type_str = self.get_key_type(key) or type(value).__name__
@@ -140,8 +167,7 @@ class DB:
 
     def get_key_type(self, key):
         """Return type of config key from database."""
-        self.execute(self.sql_get_key(key))
-        r = self.fetchall()
+        r = self.select(self.sql_get_key(key))
         if r:
             v, type_str = r[0]
             return type_str
