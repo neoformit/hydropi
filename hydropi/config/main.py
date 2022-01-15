@@ -27,10 +27,16 @@ import os
 import yaml
 import logging
 
+from hydropi.handlers.config import EXPOSED_CONFIG
 from .db import DB
 from .logconf import configure as configure_logger
 
 logger = logging.getLogger('hydropi')
+
+DB_CONFIG_KEYS = [
+    v['key']
+    for v in EXPOSED_CONFIG.values()
+]
 
 
 class Config:
@@ -61,9 +67,10 @@ class Config:
         """Retrieve config value by key.
 
         Return attribute preferentially from database, then YAML file.
-
-        WARNING: this can cause some freaky bugs!
+        Only keys that are in DB_CONFIG_KEYS will be fetched from the database.
         """
+        if key not in DB_CONFIG_KEYS:
+            return self.yml[key]
         if self.db and key in self.db.keys():
             return self.db.get(key)
         if key in self.yml:

@@ -1,7 +1,7 @@
 """Handlers for interacting with hydropi config."""
 
 import logging
-from pprint import pprint
+from pprint import pformat
 from hydropi.config import config
 from hydropi import interfaces
 
@@ -143,8 +143,8 @@ def get(name=None):
             } for param in params
         ] for g, params in EXPOSED_CONFIG.items()
     }
-    print("hydropi.handlers.config.get() data:")
-    pprint(data)
+    logger.debug("hydropi.handlers.config.get() data:")
+    logger.debug(pformat(data))
     if name:
         return data[name]
     return data
