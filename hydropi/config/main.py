@@ -27,11 +27,12 @@ import os
 import yaml
 import logging
 
-from .db import DB
+from .db import DB, SchemaError
 from .logconf import configure as configure_logger
 
 logger = logging.getLogger('hydropi')
 
+# For configuration in app
 EXPOSED_CONFIG = {
     'general': (
         {
@@ -182,8 +183,14 @@ class Config:
         configure_logger(self)
 
         if 'DATABASE' in self.yml:
-            self.db = DB(self)
-            self.sync_db()
+            try:
+                self.db = DB(self)
+                self.sync_db()
+            except SchemaError as exc:
+                logger.warning(str(exc))
+                logger.warning(
+                    "Live config is disabled without database."
+                    " Migrating the database may fix this.")
 
     def __getattr__(self, key):
         """Retrieve config value by key.

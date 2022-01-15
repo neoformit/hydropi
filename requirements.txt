@@ -2,4 +2,4 @@ adafruit-blinka
 adafruit-circuitpython-mcp3xxx
 pyyaml
 routes
-fasteners
+psycopg2-binary

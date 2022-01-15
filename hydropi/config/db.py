@@ -1,18 +1,9 @@
 """Manage optional database interface for dynamic app configuration."""
 
-import os
-import time
-import sqlite3
 import logging
-import fasteners
-# import threading
+import psycopg2
 
 logger = logging.getLogger('hydropi')
-
-# TODO: Need to make thread safe
-# https://stackoverflow.com/questions/26629080/python-and-sqlite3-programmingerror-recursive-use-of-cursors-not-allowed#
-# Didn't work... probably not referencing the same lock object.
-# Maybe try with a lock file instead?
 
 TYPECAST = {
     'int': int,
@@ -22,17 +13,23 @@ TYPECAST = {
 }
 
 
+class SchemaError(ValueError):
+    """An exception with the database schema."""
+
+    pass
+
+
 class DB:
     """Database interface for access to dynamic config."""
 
     def __init__(self, config, assert_schema=True):
         """Initiate database connection."""
-        # self.lock = threading.Lock()
-        self.SQLITE_PATH = config.DATABASE['SQLITE_PATH']
-        self._lock = fasteners.InterProcessLock(
-            os.path.join(config.TEMP_DIR, 'thread.lock')
+        self.connection = psycopg2.connect(
+            dbname=config.DATABASE['PG_DBNAME'],
+            user=config.DATABASE['PG_USER'],
+            password=config.DATABASE['PG_PASSWORD'],
+            host='127.0.0.1',
         )
-
         self.DATALOG_TABLE_NAME = config.DATABASE['DATALOG_TABLE_NAME']
         self.CONFIG_TABLE_NAME = config.DATABASE['CONFIG_TABLE_NAME']
         self.CONFIG_KEY_FIELD = config.DATABASE['CONFIG_KEY_FIELD']
@@ -42,25 +39,6 @@ class DB:
         if assert_schema:
             self._assert_schema()
 
-    # Database locking operations
-    # -------------------------------------------------------------------------
-    def get_lock(self):
-        """Acquire a lock on the database."""
-        for i in range(10):
-            # Try a maximum of 10 times
-            try:
-                return self._lock.acquire()
-            except ValueError:
-                time.sleep(0.01)
-        return self._lock.acquire()
-
-    def release_lock(self):
-        """Acquire a lock on the database."""
-        try:
-            return self._lock.release()
-        except Exception as exc:
-            logger.warning(str(exc))
-
     # SQL Execution
     # -------------------------------------------------------------------------
 
@@ -69,33 +47,30 @@ class DB:
 
         Create new database connections using a global lock on the sqlite DB.
         """
-        self.get_lock()
         try:
-            connection = sqlite3.connect(self.SQLITE_PATH)
-            cursor = connection.cursor()
+            cursor = self.connection.cursor()
             cursor.execute(sql)
-            connection.commit()
+            self.connection.commit()
         except Exception as exc:
             logger.error(f'SQL: {sql}')
             raise exc
         finally:
-            connection.close()
-            self.release_lock()
+            cursor.close()
 
     def select(self, sql):
         """Perform a SQL select and return the data.
 
         Create new database connections using a global lock on the sqlite DB.
         """
-        self.get_lock()
         try:
-            connection = sqlite3.connect(self.SQLITE_PATH)
-            cursor = connection.cursor()
+            cursor = self.connection.cursor()
             cursor.execute(sql)
             data = cursor.fetchall()
+        except Exception as exc:
+            logger.error(f'SQL: {sql}')
+            raise exc
         finally:
-            connection.close()
-            self.release_lock()
+            cursor.close()
 
         return data
 
@@ -150,7 +125,7 @@ class DB:
                 self.CONFIG_TABLE_NAME,
                 columns=(self.CONFIG_KEY_FIELD, self.CONFIG_VALUE_FIELD)))
         except Exception:
-            raise ValueError(
+            raise SchemaError(
                 "Could not establish config table from database:\n"
                 f"CONFIG_VALUE_FIELD: {self.CONFIG_VALUE_FIELD}\n"
                 f"CONFIG_KEY_FIELD: {self.CONFIG_KEY_FIELD}\n"
@@ -197,9 +172,9 @@ class DB:
             f"""
             INSERT into {self.CONFIG_TABLE_NAME}
             (
-                '{self.CONFIG_KEY_FIELD}',
-                '{self.CONFIG_VALUE_FIELD}',
-                '{self.CONFIG_TYPE_FIELD}'
+                {self.CONFIG_KEY_FIELD},
+                {self.CONFIG_VALUE_FIELD},
+                {self.CONFIG_TYPE_FIELD}
             )
             VALUES ('{key}', {value}, '{value_type}')
             """
@@ -256,7 +231,7 @@ class DB:
             f"""
             INSERT INTO {self.DATALOG_TABLE_NAME}
             ({', '.join(columns)})
-            VALUES ({', '.join(values)})
+            VALUES ('{"', '".join(values)}')
             """
         )
 
