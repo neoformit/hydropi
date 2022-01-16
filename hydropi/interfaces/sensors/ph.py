@@ -28,6 +28,7 @@ class PHSensor(AnalogInterface):
     RANGE_LOWER = config.PH_MIN
     RANGE_UPPER = config.PH_MAX
     DECIMAL_POINTS = 2
+    DEFAULT_MEDIAN_SAMPLES = 200
 
     # Calibration
     CALIBRATE_REPLICATES = 5

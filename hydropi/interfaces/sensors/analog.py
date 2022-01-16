@@ -47,6 +47,7 @@ class AnalogInterface:
     MIN_VOLTS = None
     MAX_VOLTS = None
     INVERSE = False     # Set True if volts are inverse of value
+    DEFAULT_MEDIAN_SAMPLES = 5
 
     REQUIRED_ATTRIBUTES = (
         'CHANNEL',      # ADC channel to read (zero-indexed)
@@ -127,8 +128,9 @@ class AnalogInterface:
             fraction = 1 - fraction
         return fraction * self.MAX_UNITS
 
-    def read(self, n=1):
+    def read(self, n=None):
         """Return channel reading."""
+        n = n or self.DEFAULT_MEDIAN_SAMPLES
         if n > 1:
             r = self._read_median(n)
         else:
@@ -161,7 +163,7 @@ class AnalogInterface:
     def get_status(cls):
         """Create interface and return current status data."""
         sensor = cls()
-        current = sensor.read(n=5)
+        current = sensor.read(n=cls.DEFAULT_MEDIAN_SAMPLES)
 
         # Represent reading as a percent of absolute limits such that 0.5 is in
         # the middle of the optimal range (for display on dials).

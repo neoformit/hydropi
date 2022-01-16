@@ -1,5 +1,6 @@
 # Build
-- [x] Transfer controller ownership on instantiation
+- [ ] Fix controller deeds logic
+- [ ] getState method for Controllers with `GPIO.input(channel)` or reference deed
 
 # Test
 - [ ] Interfaces
