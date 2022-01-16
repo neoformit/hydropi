@@ -1,9 +1,31 @@
-"""Interface for reading nutrient pH level."""
+"""Interface for reading nutrient pH level.
+
+Issues with calibration...
+
+In [3]: phs.calibrate()
+Place sensor in pH 4.0 standard, then hit ENTER to continue.
+INFO | 2022-01-16 16:46:50 |           ph: CALIBRATE pH 4.0: Read 2.8166015625
+INFO | 2022-01-16 16:46:55 |           ph: CALIBRATE pH 4.0: Read 2.8166015625
+INFO | 2022-01-16 16:46:59 |           ph: CALIBRATE pH 4.0: Read 2.8166015625
+INFO | 2022-01-16 16:47:03 |           ph: CALIBRATE pH 4.0: Read 2.8166015625
+Place sensor in pH 6.86 standard, then hit ENTER to continue.
+INFO | 2022-01-16 16:47:52 |           ph: CALIBRATE pH 6.86: Read 2.6748046875
+INFO | 2022-01-16 16:47:57 |           ph: CALIBRATE pH 6.86: Read 2.6748046875
+INFO | 2022-01-16 16:48:01 |           ph: CALIBRATE pH 6.86: Read 2.6748046875
+INFO | 2022-01-16 16:48:05 |           ph: CALIBRATE pH 6.86: Read 2.6748046875
+INFO | 2022-01-16 16:48:05 |           ph: Calibration complete. Return the sensor to the nutrient tank.
+
+In [6]: phs.read()
+ INFO | 2022-01-16 16:51:18 |       analog: PHSensor READ: 4.49 (n=200)
+Out[6]: 4.49
+
+"""
 
 import os
 import time
 import json
 import logging
+import statistics
 
 from hydropi.config import config
 from .analog import AnalogInterface
@@ -49,10 +71,6 @@ class PHSensor(AnalogInterface):
         super().__init__()
         self.M, self.C = self._get_coefficients()
 
-    def _volts_to_units(self, v):
-        """Override units calculation with linear equation."""
-        return self.M * v + self.C
-
     def calibrate(self):
         """Calibrate the sensor with standard solutions (pH 4.0 & 6.86).
 
@@ -64,19 +82,33 @@ class PHSensor(AnalogInterface):
             input(
                 f"Place sensor in pH {std} standard,"
                 " then hit ENTER to continue.")
-            data[std] = self.take_calibration_reading(std)
+            data[std] = self._take_calibration_reading(std)
 
         self._set_new_calibration(data)
         logger.info(
             "Calibration complete. Return the sensor to the nutrient tank.")
 
-    def take_calibration_reading(self, standard):
+    def _volts_to_units(self, v):
+        """Override units calculation with linear equation."""
+        return self.M * v + self.C
+
+    def _take_voltage_median(self, n=None):
+        """Return median voltage from <n> samples."""
+        n = n or self.DEFAULT_MEDIAN_SAMPLES
+        data = []
+        for i in range(n):
+            data.append(self.get_value(as_volts=True))
+            time.sleep(self.MEDIAN_INTERVAL_SECONDS)
+        return statistics.median(data)
+
+    def _take_calibration_reading(self, standard):
         """Wait for sensor to settle and take a reading."""
-        readings = [self.get_value(as_volts=True)]
+        readings = [self._take_voltage_median()]
         while True:
             time.sleep(self.CALIBRATE_INTERVAL_SECONDS)
-            readings.append(self.get_value(as_volts=True))
-            logger.info(f"CALIBRATE pH {standard}: Read {readings[-1]}")
+            readings.append(self._take_voltage_median())
+            logger.info(
+                f"CALIBRATE pH {standard}: Read {round(readings[-1], 4)}v")
             if len(readings) < self.CALIBRATE_REPLICATES:
                 continue
             variance = max(readings[-5:]) - min(readings[-5:])

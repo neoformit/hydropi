@@ -31,7 +31,7 @@ class AbstractDoseController(AbstractController):
 
     def deliver(self, ml=None):
         """Deliver the specified volume of additive."""
-        ml = ml or self.DEFAULT_ML
+        ml = int(ml or self.DEFAULT_ML)
         logger.info(f"ACTION: {type(self).__name__} deliver {ml}ml")
 
         # Start mixing pump and delay
