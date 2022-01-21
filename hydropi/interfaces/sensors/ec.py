@@ -14,7 +14,7 @@ class ECSensor(AnalogInterface):
     TEXT = 'EC'
     UNIT = 'μS'
     MIN_UNITS = 0
-    MAX_UNITS = 12200  # Spec says 3125...
+    MAX_UNITS = 10000  # Spec says 3125...
     MIN_VOLTS = 0
     MAX_VOLTS = 3.3
     V0_OFFSET = 0
