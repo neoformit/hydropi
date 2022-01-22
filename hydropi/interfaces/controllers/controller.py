@@ -62,12 +62,12 @@ class AbstractController:
 
     def off(self):
         """Deactivate the device."""
-        if self._revoke_ownership():
-            logger.info(
+        owners = self._revoke_ownership()
+        if owners:
+            return logger.info(
                 f"{type(self).__name__}:"
                 " OWNERSHIP REVOKED FROM SHARED INTERFACE: ownership has been"
-                " delegated")
-            return
+                f" delegated to threads {owners}")
         logger.info(
             f"{type(self).__name__}: switch output state to {self.OFF}:OFF")
         self._set_state(self.OFF)
@@ -107,7 +107,7 @@ class AbstractController:
             pass
         if owners:
             logger.debug(f'Remaining owners: {owners}')
-            return True
+            return owners
         return False
 
     @property
