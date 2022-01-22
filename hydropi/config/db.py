@@ -111,9 +111,9 @@ class DB:
         """Write current readings to the database."""
         try:
             self.execute(self.sql_write_row(data))
-        except Exception:
+        except Exception as exc:
             logger.error(
-                "DB.log_data: could not connect to SQLite database")
+                f"DB.log_data: exception writing to database:\n{exc}")
 
     # Assertions
     # -------------------------------------------------------------------------
