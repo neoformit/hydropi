@@ -7,7 +7,7 @@ from hydropi.interfaces.sensors import (
     DepthSensor,
     PressureSensor,
     ECSensor,
-    # PHSensor,
+    PHSensor,
     # TemperatureSensor,
 )
 
@@ -15,7 +15,7 @@ SENSORS = {
     'pressure': PressureSensor,
     'depth': DepthSensor,
     'ec': ECSensor,
-    # 'ph': PHSensor,
+    'ph': PHSensor,
     # 'temperature': TemperatureSensor,
 }
 
