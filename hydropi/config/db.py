@@ -110,7 +110,7 @@ class DB:
     def log_data(self, data):
         """Write current readings to the database."""
         try:
-            self.execute(self.sql_write_row(data))
+            self.execute(self.sql_write_datalog(data))
         except Exception as exc:
             logger.error(
                 f"DB.log_data: exception writing to database:\n{exc}")
@@ -222,7 +222,7 @@ class DB:
             """
         )
 
-    def sql_write_datalog_row(self, data):
+    def sql_write_datalog(self, data):
         """Generate SQL to write row on datalog table."""
         fields = data.items()
         columns = [x[0] for x in fields]
@@ -232,7 +232,7 @@ class DB:
             f"""
             INSERT INTO {self.DATALOG_TABLE_NAME}
             ({', '.join(columns)})
-            VALUES ('{"', '".join(values)}')
+            VALUES ({",".join([str(x) for x in values])})
             """
         )
 

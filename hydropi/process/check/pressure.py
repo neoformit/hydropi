@@ -49,7 +49,7 @@ def restore(stat):
         logger.info(
             "Cannot restore system pressure:"
             " waiting for quiet time end to restore.")
-        return
+        return stat
 
     logger.info("Restoring system pressure.")
     pump = PressurePumpController()
