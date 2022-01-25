@@ -4,7 +4,7 @@ from .ph import PHSensor
 from .ec import ECSensor
 from .depth import DepthSensor
 from .pressure import PressureSensor
-from .temperature import TemperatureSensor
+from .temperature import TankTemperatureSensor, PipeTemperatureSensor
 
 
 def get_ph():
@@ -27,7 +27,7 @@ def get_depth():
 
 def get_temperature():
     """Return current temperature."""
-    ts = TemperatureSensor()
+    ts = TankTemperatureSensor()
     return ts.read()
 
 

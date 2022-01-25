@@ -5,7 +5,8 @@ from .sensors import (
     PHSensor,
     DepthSensor,
     PressureSensor,
-    TemperatureSensor,
+    TankTemperatureSensor,
+    PipeTemperatureSensor,
 )
 from .controllers import (
     ECController,
@@ -21,7 +22,7 @@ SENSORS = {
     'ph': PHSensor,
     'depth': DepthSensor,
     'pressure': PressureSensor,
-    'temperature': TemperatureSensor,
+    'temperature': TankTemperatureSensor,
 }
 
 CONTROLLERS = {
