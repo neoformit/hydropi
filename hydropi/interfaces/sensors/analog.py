@@ -122,9 +122,11 @@ class AnalogInterface:
 
     def _volts_to_units(self, v):
         """Calculate units from analog voltage."""
+        logger.debug("Calculate volts to units from default equation")
         ref_range = self.MAX_VOLTS - self.MIN_VOLTS
         fraction = (v - self.MIN_VOLTS) / ref_range
         if self.INVERSE:
+            logger.debug("Calculate units against inverse voltage")
             fraction = 1 - fraction
         return fraction * self.MAX_UNITS
 
@@ -145,9 +147,11 @@ class AnalogInterface:
         """Return median channel reading from <n> samples."""
         readings = []
         for i in range(n):
-            readings.append(self.get_value())
+            readings.append(self.get_value(as_volts=True))
             time.sleep(self.MEDIAN_INTERVAL_SECONDS)
-        return statistics.median(readings)
+        volts = statistics.median(readings)
+        logger.debug(f"Median volts (n={n}): {volts}")
+        return self._volts_to_units(volts)
 
     def get_status_text(self, value):
         """Return appropriate status text for given value."""

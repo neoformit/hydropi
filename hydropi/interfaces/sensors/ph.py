@@ -46,7 +46,6 @@ class PHSensor(AnalogInterface):
     MAX_UNITS = 12
     MIN_VOLTS = 1.8857
     MAX_VOLTS = 3.3
-    INVERSE = True
     RANGE_LOWER = config.PH_MIN
     RANGE_UPPER = config.PH_MAX
     DECIMAL_POINTS = 2
@@ -90,6 +89,7 @@ class PHSensor(AnalogInterface):
 
     def _volts_to_units(self, v):
         """Override units calculation with linear equation."""
+        logger.debug("Calculate volts to units with pH linear equation")
         return self.M * v + self.C
 
     def _take_voltage_median(self, n=None):
