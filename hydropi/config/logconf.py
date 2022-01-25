@@ -12,13 +12,14 @@ def configure(config):
         logger.info("Skip Hydropi log config (DISABLE_HYDROPI_LOG = True)")
         return
 
-    log_level = 'DEBUG' if config.DEBUG else 'INFO'
+    console_log_level = 'DEBUG' if config.DEBUG else 'INFO'
+
     logging.config.dictConfig({
         'version': 1,
         'disable_existing_loggers': False,
         'formatters': {
             'standard': {
-                'format': '%(levelname)5s | %(asctime)s | %(module)12s: %(message)s',
+                'format': '%(levelname).4s | %(asctime)s | %(module)-12s| %(message)s',
                 'datefmt': '%Y-%m-%d %H:%M:%S',
                 'style': "%",
             },
@@ -26,7 +27,7 @@ def configure(config):
         'handlers': {
             'file': {
                 'delay': True,
-                'level': 'DEBUG',
+                'level': 'INFO',
                 'class': 'logging.handlers.RotatingFileHandler',
                 'maxBytes': 1000000,  # 1MB ~ 20k rows
                 'backupCount': 5,
@@ -34,15 +35,25 @@ def configure(config):
                 'mode': 'a',
                 'formatter': 'standard',
             },
+            'debug_file': {
+                'delay': True,
+                'level': 'DEBUG',
+                'class': 'logging.handlers.RotatingFileHandler',
+                'maxBytes': 1000000,  # 1MB ~ 20k rows
+                'backupCount': 5,
+                'filename': os.path.join(config.CONFIG_DIR, 'hydro.debug.log'),
+                'mode': 'a',
+                'formatter': 'standard',
+            },
             'console': {
                 'class': 'logging.StreamHandler',
-                'level': 'DEBUG',
+                'level': console_log_level,
                 'formatter': 'standard',
             },
         },
         'loggers': {
             'hydropi': {
-                'level': log_level,
+                'level': 'DEBUG',
                 'handlers': ['console', 'file'],
                 'propagate': True,
             },
