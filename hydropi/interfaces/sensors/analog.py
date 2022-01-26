@@ -102,6 +102,11 @@ class AnalogInterface:
     def get_value(self, as_volts=False):
         """Calculate current channel reading."""
         if config.DEVMODE:
+            if as_volts:
+                range = (self.MAX_VOLTS - self.MIN_VOLTS) * 0.25
+                return random.uniform(
+                    self.MIN_VOLTS + range,
+                    self.MAX_VOLTS - range)
             return random.uniform(self.DANGER_LOWER, self.DANGER_UPPER)
 
         try:
