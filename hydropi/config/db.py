@@ -2,6 +2,7 @@
 
 import logging
 import psycopg2
+from datetime import datetime
 
 logger = logging.getLogger('hydropi')
 
@@ -109,6 +110,8 @@ class DB:
 
     def log_data(self, data):
         """Write current readings to the database."""
+        dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f') + "+10"
+        data['datetime'] = dt
         try:
             self.execute(self.sql_write_datalog(data))
         except Exception as exc:
@@ -226,7 +229,10 @@ class DB:
         """Generate SQL to write row on datalog table."""
         fields = data.items()
         columns = [x[0] for x in fields]
-        values = [x[1] for x in fields]
+        values = [
+            x[1] if x[0] != 'datetime' else f"'{x[1]}'"
+            for x in fields
+        ]
 
         return (
             f"""

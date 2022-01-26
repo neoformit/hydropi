@@ -14,7 +14,10 @@ def level():
     """Check nutrient levels."""
     sensor = PHSensor()
     stat = sensor.read(n=5)
-    logger.info(f"READ pH: {stat}{sensor.UNIT}")
+
+    # Not yet capable of maintenance
+    return stat
+
     if config.PH_ACTION_THRESHOLD > abs(stat - config.PH_TARGET):
         logger.info(f"pH within acceptable range of target {config.PH_TARGET}")
         return stat

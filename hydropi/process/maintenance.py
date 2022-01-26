@@ -11,9 +11,9 @@ def sweep():
     """Perform sweep, log readings and adjust."""
     while True:
         stat = {
-            # 'ec': check.ec.level(),
-            # 'ph': check.ph.level(),
-            # 'depth_mm': check.tank.depth(),
+            'ec': check.ec.level(),
+            'ph': check.ph.level(),
+            'depth_l': check.tank.depth(),
             'pressure_psi': check.pressure.level(),
             # 'temp_c': thermometer.read(),
         }

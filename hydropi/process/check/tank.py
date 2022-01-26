@@ -14,7 +14,10 @@ def depth():
     """Check tank depth."""
     sensor = DepthSensor()
     stat = sensor.read(n=5)
-    logger.info(f"READ depth: {stat}{sensor.UNIT}")
+
+    # Not yet capable of maintenance
+    return stat
+
     depth_lower_limit = config.DEPTH_MAXIMUM_MM * config.DEPTH_ACTION_THRESHOLD
 
     if stat > depth_lower_limit:

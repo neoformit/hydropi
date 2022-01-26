@@ -14,7 +14,10 @@ def level():
     """Check nutrient levels."""
     sensor = ECSensor()
     stat = sensor.read(n=5)
-    logger.info(f"READ EC: {stat}{sensor.UNIT}")
+
+    # Not yet capable of maintenance
+    return stat
+
     if config.EC_ACTION_THRESHOLD > abs(stat - config.EC_TARGET):
         logger.info(f"EC within acceptable range of target {config.EC_TARGET}")
         return stat
