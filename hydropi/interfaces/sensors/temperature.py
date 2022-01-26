@@ -42,7 +42,7 @@ class PipeTemperatureSensor():
             return round(random.uniform(18, 30), self.DECIMAL_POINTS)
         with open(self.DEVICE) as f:
             data = f.read().split('\n')[1].split('t=')[1]
-        return int(data) / 1000
+        return round(int(data) / 1000, self.DECIMAL_POINTS)
 
 
 class TankTemperatureSensor(AnalogInterface):
