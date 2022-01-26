@@ -1,9 +1,13 @@
 """Read the temperature in the nutrient tank."""
 
 import os
+import random
+import logging
 
 from hydropi.config import config
 from .analog import AnalogInterface
+
+logger = logging.getLogger('hydropi')
 
 
 class PipeTemperatureSensor():
@@ -18,9 +22,12 @@ class PipeTemperatureSensor():
     TEXT = 'temperature (pipe)'
     UNIT = '°C'
     DEVICE = '/sys/bus/w1/devices/28-01131b576dcc/w1_slave'
+    DECIMAL_POINTS = 1
 
     def __init__(self):
         """Initialize interface."""
+        if config.DEVMODE:
+            logger.warning("DEVMODE: spoofed w1 interface")
         if not os.path.exists(self.DEVICE):
             raise RuntimeError(
                 f'OneWire device not found: {self.DEVICE}\n'
@@ -30,6 +37,9 @@ class PipeTemperatureSensor():
 
     def read(self):
         """Read temperature."""
+        if config.DEVMODE:
+            logger.warning("DEVMODE: spoofed temperature reading")
+            return round(random.uniform(18, 30), self.DECIMAL_POINTS)
         with open(self.DEVICE) as f:
             data = f.read().split('\n')[1].split('t=')[1]
         return int(data) / 1000
