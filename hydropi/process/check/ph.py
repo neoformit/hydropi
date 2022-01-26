@@ -13,7 +13,7 @@ logger = logging.getLogger('hydropi')
 def level():
     """Check nutrient levels."""
     sensor = PHSensor()
-    stat = sensor.read(n=5)
+    stat = sensor.read()
 
     # Not yet capable of maintenance
     return stat
