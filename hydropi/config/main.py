@@ -153,6 +153,13 @@ EXPOSED_CONFIG = {
             'type': 'number',
             'help': 'Tank pressure where refill will terminate (PSI)',
         },
+        {
+            'key': 'PRESSURE_REFILL_DURATION_SECONDS',
+            'type': 'number',
+            'help': (
+                'Estimated duration of a tank refill from min to max'
+                ' (seconds)'),
+        },
     ),
 }
 
