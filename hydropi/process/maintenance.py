@@ -14,7 +14,7 @@ def sweep():
         stat = {
             'ec': check.ec.level(),
             'ph': check.ph.level(),
-            'depth_l': check.tank.depth(),
+            'volume_l': check.tank.depth(),
             'pressure_psi': check.pressure.level(),
             'temp_c': temp.read(),
         }
