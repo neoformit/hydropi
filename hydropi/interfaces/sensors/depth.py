@@ -41,6 +41,7 @@ class DepthSensor:
     PIN_TRIG = config.PIN_DEPTH_TRIG
     PIN_ECHO = config.PIN_DEPTH_ECHO
     MEDIAN_INTERVAL_SECONDS = 0.05 or config.MEDIAN_INTERVAL_SECONDS
+    DEFAULT_MEDIAN_SAMPLES = 5
 
     def __init__(self):
         """Initialise interface."""
@@ -74,11 +75,27 @@ class DepthSensor:
         io.cleanup(self.PIN_TRIG)
         io.cleanup(self.PIN_ECHO)
 
-    def read(self, n=1, include_pressure=True, depth=False, head=False):
-        """Return current depth in mm."""
+    def read(self, n=None, include_pressure=True,
+             depth=False, head=False, echo=False):
+        """Return current volume in litres.
+
+        include_pressure=True adds on the estimated volume stored in the
+        pressure tank
+
+        echo=True provides the echo time in ms
+
+        head=True provides head height in mm (distance from sensor to surface)
+
+        depth=True provides tank depth in mm
+        """
+        n = n or self.DEFAULT_MEDIAN_SAMPLES
         if n > 1:
-            return self._read_median(n)
-        td = self._get_echo_time()
+            td = self._read_median(n)
+        else:
+            td = self._get_echo_time()
+
+        if echo:
+            return td
         if head:
             r = round(time_to_distance(td), None)
             logger.info(f"{type(self).__name__} READ: HEAD {r}mm (n={n})")
@@ -89,24 +106,22 @@ class DepthSensor:
             return r
         vol = time_to_volume(td)
         logger.debug(
-            f"{type(self).__name__} READ:"
-            f" tank volume {round(vol)} litres")
+            f"{type(self).__name__} READ: tank volume excluding pressure"
+            f" {round(vol, self.DECIMAL_POINTS)} litres")
         if include_pressure:
             ps = PressureSensor()
             vol += ps.get_tank_volume()
-        r = round(vol, 1)
+        r = round(vol, self.DECIMAL_POINTS)
         logger.info(f"{type(self).__name__} READ: {r}{self.UNIT} (n={n})")
         return r
 
     def _read_median(self, n):
-        """Return median channel reading from <n> samples."""
+        """Return median echo time from <n> samples."""
         readings = []
         for i in range(n):
-            readings.append(self.read())
+            readings.append(self.read(n=1, echo=True))
             time.sleep(self.MEDIAN_INTERVAL_SECONDS)
-        r = statistics.median(readings)
-        logger.debug(f"{type(self).__name__} READ: {r}{self.UNIT} (n={n})")
-        return r
+        return statistics.median(readings)
 
     def _get_echo_time(self):
         """Collect a reading from the ultrasonic sensor."""
@@ -151,7 +166,7 @@ class DepthSensor:
                 random.uniform(depth.DANGER_LOWER_L, depth.DANGER_UPPER_L),
                 depth.DECIMAL_POINTS)
         else:
-            current = depth.read(n=5)
+            current = depth.read()
 
         # Represent reading as a percent of total volume
         if current > depth.CEILING_L:
@@ -176,7 +191,7 @@ class DepthSensor:
 
     def full(self):
         """Check whether tank is full and return Boolean."""
-        stat = self.read(n=5)
+        stat = self.read()
         # 95% full is good enough
         if stat < 0.95 * config.DEPTH_MAXIMUM_MM:
             logger.debug("Tank depth below full")
@@ -187,7 +202,7 @@ class DepthSensor:
     def test(self):
         """Test the component interface."""
         while True:
-            logger.info(f"READING: {self.read(n=15)}{self.UNIT}")
+            logger.info(f"READING: {self.read()}{self.UNIT}")
             time.sleep(1)
 
 

@@ -13,7 +13,7 @@ logger = logging.getLogger('hydropi')
 def depth():
     """Check tank depth."""
     sensor = DepthSensor()
-    stat = sensor.read(n=5)
+    stat = sensor.read()
 
     # Not yet capable of maintenance
     return stat
