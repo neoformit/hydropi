@@ -1,1 +1,2 @@
-from .main import config, STATUS, EXPOSED_CONFIG
+from .main import config, STATUS
+from .expose import EXPOSED_CONFIG
