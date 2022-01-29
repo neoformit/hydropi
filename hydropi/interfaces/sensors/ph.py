@@ -29,6 +29,7 @@ import statistics
 
 from hydropi.config import config
 from .analog import AnalogInterface
+from .ec import ECSensor
 
 logger = logging.getLogger('hydropi')
 
@@ -68,6 +69,11 @@ class PHSensor(AnalogInterface):
         self.RANGE_UPPER = config.PH_MAX
         super().__init__()
         self.M, self.C = self._get_coefficients()
+
+    def read(self, *args, **kwargs):
+        """Override super.read to use ECSensor's isolation switch."""
+        with ECSensor.isolation():
+            return super().read(*args, **kwargs)
 
     def calibrate(self):
         """Calibrate the sensor with standard solutions (pH 4.0 & 6.86).
