@@ -6,10 +6,12 @@ from threading import Thread
 from hydropi.config import config
 from hydropi.interfaces.sensors.depth import DepthSensor
 from hydropi.interfaces.controllers.water import WaterController
+from hydropi.errors import handle_errors
 
 logger = logging.getLogger('hydropi')
 
 
+@handle_errors
 def depth():
     """Check tank depth."""
     sensor = DepthSensor()
