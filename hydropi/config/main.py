@@ -33,10 +33,10 @@ from .expose import EXPOSED_CONFIG
 
 logger = logging.getLogger('hydropi')
 
-DB_CONFIG_KEYS = [
+DB_CONFIG_KEYS = {
     k['key'] for keys in EXPOSED_CONFIG.values()
     for k in keys
-]
+}
 
 
 class Config:
@@ -64,7 +64,7 @@ class Config:
                 self.db = DB(self)
                 self.sync_db()
             except SchemaError as exc:
-                logger.warning(str(exc))
+                logger.error(str(exc))
                 logger.warning(
                     "Live config is disabled without database."
                     " Migrating the database may fix this.")
@@ -126,11 +126,9 @@ class Config:
             logger.warning("Trying update config from DB without connection.")
             return
 
-        yml_keys = set(self.yml.keys()) - {'DATABASE'}
         db_keys = set(self.db.keys())
-
-        db_absent_keys = yml_keys - db_keys
-        db_redundant_keys = db_keys - yml_keys
+        db_absent_keys = DB_CONFIG_KEYS - db_keys
+        db_redundant_keys = db_keys - DB_CONFIG_KEYS
         for k in db_absent_keys:
             self.set(k, self.yml[k])
         for k in db_redundant_keys:
