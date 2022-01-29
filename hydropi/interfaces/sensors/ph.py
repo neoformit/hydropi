@@ -48,7 +48,7 @@ class PHSensor(AnalogInterface):
     MIN_VOLTS = 1.8857
     MAX_VOLTS = 3.3
     DECIMAL_POINTS = 2
-    DEFAULT_MEDIAN_SAMPLES = 200
+    DEFAULT_MEDIAN_SAMPLES = 25
 
     # Calibration
     CALIBRATE_REPLICATES = 5

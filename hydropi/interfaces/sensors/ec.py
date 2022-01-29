@@ -40,7 +40,7 @@ class ECSensorIsolator:
         if config.DEVMODE:
             return
         io.setmode(io.BCM)
-        io.setup(self.PIN, io.output)
+        io.setup(self.PIN, io.OUT)
 
     def __enter__(self):
         """Enable isolation."""
