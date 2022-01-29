@@ -133,7 +133,7 @@ class AnalogInterface:
         if self.INVERSE:
             logger.debug("Calculate units against inverse voltage")
             fraction = 1 - fraction
-        return fraction * self.MAX_UNITS
+        return self.read_transform(fraction * self.MAX_UNITS)
 
     def read(self, n=None):
         """Return channel reading."""
@@ -147,6 +147,10 @@ class AnalogInterface:
             f"{type(self).__name__}"
             f" READ: {rounded}{self.UNIT} (n={n})")
         return(rounded)
+
+    def read_transform(self, value):
+        """Override this method to adjust reading e.g. temp correction."""
+        return value
 
     def _read_median(self, n):
         """Return median channel reading from <n> samples."""

@@ -2,6 +2,7 @@
 
 from hydropi.config import config
 from .analog import AnalogInterface
+from .temperature import PipeTemperatureSensor
 
 
 class ECSensor(AnalogInterface):
@@ -21,3 +22,16 @@ class ECSensor(AnalogInterface):
     RANGE_LOWER = config.EC_MIN
     RANGE_UPPER = config.EC_MAX
     DECIMAL_POINTS = None
+
+    # Temperature correction coefficients
+    # Will have to recalculate these for TankTemperatureSensor
+    TC_M = -14.21
+    TC_C = 443
+
+    def read_transform(self, value):
+        """Apply temperature correction to reading."""
+        # Not worth doing with pipe temperature
+        return value
+
+        ts = PipeTemperatureSensor()
+        return value + ts.read() * self.TC_M + self.TC_C
