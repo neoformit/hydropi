@@ -44,10 +44,7 @@ class DB:
     # -------------------------------------------------------------------------
 
     def execute(self, sql):
-        """Execute SQL and log SQL statement if error.
-
-        Create new database connections using a global lock on the sqlite DB.
-        """
+        """Execute SQL and log SQL statement if error."""
         try:
             cursor = self.connection.cursor()
             cursor.execute(sql)
@@ -59,10 +56,7 @@ class DB:
             cursor.close()
 
     def select(self, sql):
-        """Perform a SQL select and return the data.
-
-        Create new database connections using a global lock on the sqlite DB.
-        """
+        """Perform a SQL select and return the data."""
         try:
             cursor = self.connection.cursor()
             cursor.execute(sql)
@@ -91,11 +85,17 @@ class DB:
             return TYPECAST[type_str](v)
 
     def set(self, key, value):
-        """Set value for given field."""
+        """Set config value for given field."""
+        if value == '' or value is None:
+            raise ValueError(
+                f"config.set received empty config value: {value}")
         if not self.get(key):
             sql = self.sql_add_key(key, value)
             logger.debug("SQL ADD KEY:\n" + sql)
         else:
+            # Assert that value can be cast to field type
+            type_str = self.select(self.sql_get_key(key))[0][1]
+            TYPECAST[type_str](value)  # will raise ValueError if not castable
             sql = self.sql_set_key(key, value)
             logger.debug("SQL SET KEY:\n" + sql)
         self.execute(sql)
