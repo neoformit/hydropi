@@ -46,8 +46,6 @@ class PHSensor(AnalogInterface):
     MAX_UNITS = 12
     MIN_VOLTS = 1.8857
     MAX_VOLTS = 3.3
-    RANGE_LOWER = config.PH_MIN
-    RANGE_UPPER = config.PH_MAX
     DECIMAL_POINTS = 2
     DEFAULT_MEDIAN_SAMPLES = 200
 
@@ -65,8 +63,9 @@ class PHSensor(AnalogInterface):
     C = 26.1926
 
     def __init__(self):
-        """Initialize pH sensor."""
-        # Linear equation coefficients
+        """Initialise object."""
+        self.RANGE_LOWER = config.PH_MIN
+        self.RANGE_UPPER = config.PH_MAX
         super().__init__()
         self.M, self.C = self._get_coefficients()
 

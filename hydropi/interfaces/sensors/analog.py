@@ -65,6 +65,9 @@ class AnalogInterface:
         """Create interface for the MCP3008 analog converter chip.
 
         Pass the required channel and request readings with interface.read().
+
+        Attributes that may change at runtime (i.e. exposed config) should
+        be declared as instance attributes in the subclass.
         """
         self._validate()
         self._setup()

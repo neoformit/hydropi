@@ -12,8 +12,6 @@ class PressureSensor(AnalogInterface):
     """Interface for analog pressure sensor.
 
     Call read() to get current pressure.
-
-    0.33 - 3 volts -> 0 - 145 psi
     """
 
     TEXT = 'pressure'
@@ -25,8 +23,12 @@ class PressureSensor(AnalogInterface):
     V0_OFFSET = -0.006152
     DECIMAL_POINTS = None
     CHANNEL = config.CHANNEL_PRESSURE
-    RANGE_LOWER = config.MIN_PRESSURE_PSI
-    RANGE_UPPER = config.MAX_PRESSURE_PSI
+
+    def __init__(self):
+        """Initialise object."""
+        self.RANGE_LOWER = config.MIN_PRESSURE_PSI
+        self.RANGE_UPPER = config.MAX_PRESSURE_PSI
+        super().__init__()
 
     def get_tank_volume(self):
         """Estimate tank volume in litres based on the current pressure."""
