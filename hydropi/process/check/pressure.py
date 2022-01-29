@@ -7,7 +7,7 @@ from threading import Thread
 from hydropi.process.check.time import is_quiet_time
 from hydropi.interfaces.sensors.pressure import PressureSensor
 from hydropi.interfaces.controllers.pressure import PressurePumpController
-from hydropi.errors import handle_errors
+from hydropi.process.errors import handle_errors
 
 logger = logging.getLogger('hydropi')
 

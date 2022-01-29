@@ -3,3 +3,4 @@ adafruit-circuitpython-mcp3xxx
 pyyaml
 routes
 psycopg2-binary
+requests

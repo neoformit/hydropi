@@ -6,7 +6,7 @@ from threading import Thread
 from hydropi.config import config
 from hydropi.interfaces.sensors.ec import ECSensor
 from hydropi.interfaces.controllers.ec import ECController
-from hydropi.errors import handle_errors
+from hydropi.process.errors import handle_errors
 
 logger = logging.getLogger('hydropi')
 
