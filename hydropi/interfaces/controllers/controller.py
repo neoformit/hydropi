@@ -37,9 +37,12 @@ class AbstractController:
         """Clean up IO hardware on termination."""
         if os.path.exists(self._deed):
             os.remove(self._deed)
+        if self._abandon:
+            return logger.debug(
+                f"{type(self).__name__} has been orphaned."
+                " Abandoning interface without cleanup.")
         if config.DEVMODE:
-            logger.warning("DEVMODE: skip IO cleanup")
-            return
+            return logger.warning("DEVMODE: skip IO cleanup")
         io.setmode(io.BCM)
         io.cleanup(self.PIN)
 
@@ -53,8 +56,9 @@ class AbstractController:
             input(f'Running {type(self).__name__}... press enter to stop')
         self.off()
 
-    def on(self):
+    def on(self, abandon=False):
         """Activate the device."""
+        self._abandon = abandon
         logger.info(
             f"{type(self).__name__}: switch output state to {self.ON}:ON")
         self._set_state(self.ON)
