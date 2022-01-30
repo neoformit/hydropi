@@ -27,7 +27,7 @@ class PipeTemperatureSensor():
     def __init__(self):
         """Initialize interface."""
         if config.DEVMODE:
-            logger.warning("DEVMODE: spoofed w1 interface")
+            return logger.warning("DEVMODE: spoofed w1 interface")
         if not os.path.exists(self.DEVICE):
             raise RuntimeError(
                 f'OneWire device not found: {self.DEVICE}\n'
@@ -39,7 +39,7 @@ class PipeTemperatureSensor():
         """Read temperature."""
         if config.DEVMODE:
             logger.warning("DEVMODE: spoofed temperature reading")
-            return round(random.uniform(18, 30), self.DECIMAL_POINTS)
+            return round(random.uniform(18, 45), self.DECIMAL_POINTS)
         with open(self.DEVICE) as f:
             data = f.read().split('\n')[1].split('t=')[1]
         return round(int(data) / 1000, self.DECIMAL_POINTS)

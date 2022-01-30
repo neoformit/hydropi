@@ -80,10 +80,12 @@ class ECSensor(AnalogInterface):
 
     isolation = ECSensorIsolator
 
-    # Temperature correction coefficients
+    # Temperature correction polynomial coefficients
     # Will have to recalculate these for TankTemperatureSensor
-    TC_M = -14.21
-    TC_C = 443
+    TC_A = 0.50938
+    TC_E = 2
+    TC_B = -15.55071
+    TC_C = 56
 
     def __init__(self):
         """Initialise object."""
@@ -93,8 +95,11 @@ class ECSensor(AnalogInterface):
 
     def read_transform(self, value):
         """Apply temperature correction to reading."""
-        # Not worth doing with pipe temperature
-        return value
-
+        # Worth doing with pipe temperature?
         ts = PipeTemperatureSensor()
-        return value + ts.read() * self.TC_M + self.TC_C
+
+        x = ts.read()
+        # Polynomial function between temperature and EC offset
+        offset = self.TC_A * x ** self.TC_E + self.TC_B * x + self.TC_C
+        logger.debug(f"Offset EC value {value} at {x}{ts.UNIT}: {offset}")
+        return value + offset
