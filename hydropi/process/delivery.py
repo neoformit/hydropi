@@ -26,7 +26,7 @@ def mist():
             if paused():
                 logger.debug("Skip mist round while paused")
             else:
-                deliver_mist()
+                MistController().mist()
             time.sleep(get_sleep_interval())
     except Exception as exc:
         telegram.notify(f"ERROR ENCOUNTERED IN DELIVERY:\n\n{exc}")
@@ -36,16 +36,6 @@ def mist():
             logger.warning("DEVMODE: skip IO cleanup")
         else:
             io.cleanup()
-
-
-def deliver_mist():
-    """Deliver a mist event."""
-    logger.debug(
-        f"ACTION: MIST {config.MIST_DURATION_SECONDS} SECONDS")
-    mc = MistController()
-    mc.on()
-    time.sleep(config.MIST_DURATION_SECONDS)
-    mc.off()
 
 
 def get_sleep_interval():
