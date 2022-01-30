@@ -1,8 +1,13 @@
 """Perform cyclical release of nutrient solution."""
 
+try:
+    import RPi.GPIO as io
+except ModuleNotFoundError:
+    print("WARNING: Can't import Pi packages - assume developer mode")
+    io = None
+
 import time
 import logging
-from RPi import GPIO as io
 
 from hydropi.config import config
 from hydropi.notifications import telegram
@@ -18,7 +23,9 @@ def mist():
     """Periodically release nutrient mist."""
     try:
         while True:
-            if not paused():
+            if paused():
+                logger.debug("Skip mist round while paused")
+            else:
                 deliver_mist()
             time.sleep(get_sleep_interval())
     except Exception as exc:

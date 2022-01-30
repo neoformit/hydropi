@@ -22,7 +22,9 @@ def sweep():
     """Perform sweep, log readings and adjust."""
     try:
         while True:
-            if not paused():
+            if paused():
+                logger.debug("Skip sweep round while paused")
+            else:
                 sweep_and_restore()
             sleep(60 * config.SWEEP_CYCLE_MINUTES)
     except Exception as exc:
