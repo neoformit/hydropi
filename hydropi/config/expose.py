@@ -83,6 +83,11 @@ EXPOSED_CONFIG = {
             'type': 'number',
             'help': 'Duration of mixing before an addition is made (seconds)',
         },
+        {
+            'key': 'MIX_EVERY_MINUTES',
+            'type': 'number',
+            'help': 'Interval between nutrient tank mixing (minutes)',
+        },
     ),
     'depth': (
         {
