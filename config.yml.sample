@@ -1,15 +1,21 @@
 # Environment
 #-------------------------------------------------------------------------------
-DEVMODE: True                # Spoof hardware interfaces
-DEBUG: False                 # Extra logging output
+DEVMODE: True                # Spoof hardware interfaces on dev machine
+DEBUG: True                 # Extra logging output
 CONFIG_DIR: '~/.hydropi'
 DAEMON_HTTP_PORT: 2021
+
+# Notifications
+# ------------------------------------------------------------------------------
+
+TELEGRAM_API_TOKEN: XXX
+TELEGRAM_CHAT_ID: XXX
 
 # Hardware IO (BCM)
 #-------------------------------------------------------------------------------
 
 # Inputs
-PIN_TEMPERATURE: 2
+PIN_TEMPERATURE_PIPE: 2
 PIN_DEPTH_TRIG: 4
 PIN_DEPTH_ECHO: 5
 
@@ -23,6 +29,7 @@ PIN_CS: 26    # Channel select
 CHANNEL_PH: 0
 CHANNEL_EC: 1
 CHANNEL_PRESSURE: 2
+CHANNEL_TEMPERATURE_PIPE: 4
 
 # Output relay:pin mapping
 # <Relay channel>: <BCM pin>
@@ -39,7 +46,7 @@ PIN_PRESSURE_PUMP: 14        # Ch. 1
 PIN_MIST_VALVE: 15           # Ch. 2
 PIN_NUTRIENT_PUMP: 18        # Ch. 3
 PIN_PH_DOWN_PUMP: 23         # Ch. 4
-PIN_SPARE_DOSE_PUMP: 24      # Ch. 5
+SPARE_RELAY_PIN_A: 24        # Ch. 5
 PIN_MIX_PUMP: 7              # Ch. 6
 PIN_WATER_VALVE: 25          # Ch. 7
 SPARE_RELAY_PIN_B: 1         # Ch. 8
