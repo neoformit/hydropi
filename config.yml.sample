@@ -85,6 +85,7 @@ EC_ADDITION_ML: 10               # Nutrients dose between mix + measure
 # Mixer pump - mix nutrient and pH additions into reservoir
 MIX_PUMP_SECONDS: 300
 MIX_ADDITION_DELAY_SECONDS: 10
+MIX_EVERY_MINUTES: 120
 
 # Reservoir water level monitoring
 TANK_HEIGHT_MM: 452              # Total distance between head sensor and tank bottom (e.g. 225mm)

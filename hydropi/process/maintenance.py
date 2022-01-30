@@ -8,11 +8,13 @@ except ModuleNotFoundError:
 
 import logging
 from time import sleep
+from threading import Thread
 
 from hydropi.config import config
 from hydropi.process import check
 from hydropi.notifications import telegram
 from hydropi.interfaces import PipeTemperatureSensor
+from hydropi.interfaces import MixPumpController
 from .pause import paused
 
 logger = logging.getLogger('hydropi')
@@ -20,13 +22,20 @@ logger = logging.getLogger('hydropi')
 
 def sweep():
     """Perform sweep, log readings and adjust."""
+    minutes_without_mix = 0
     try:
         while True:
             if paused():
-                logger.debug("Skip sweep round while paused")
+                logger.info("MAINTENANCE PAUSED: Skipping sweep round")
             else:
                 sweep_and_restore()
             sleep(60 * config.SWEEP_CYCLE_MINUTES)
+            if minutes_without_mix >= config.MIX_EVERY_MINUTES:
+                # Run mix pump to aerate nutrients
+                Thread(target=MixPumpController().mix).start()
+                minutes_without_mix = 0
+            else:
+                minutes_without_mix += config.SWEEP_CYCLE_MINUTES
     except Exception as exc:
         telegram.notify(f"ERROR ENCOUNTERED IN MAINTENANCE:\n\n{exc}")
         raise exc
