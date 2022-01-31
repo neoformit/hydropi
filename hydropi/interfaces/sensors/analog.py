@@ -126,7 +126,7 @@ class AnalogInterface:
         logger.debug(f"READ VOLTS OFFSET: {round(volts_offset, 6)}")
         if as_volts:
             return volts_offset
-        return self._volts_to_units(volts_offset)
+        return self.read_transform(self._volts_to_units(volts_offset))
 
     def _volts_to_units(self, v):
         """Calculate units from analog voltage."""
@@ -136,7 +136,7 @@ class AnalogInterface:
         if self.INVERSE:
             logger.debug("Calculate units against inverse voltage")
             fraction = 1 - fraction
-        return self.read_transform(fraction * self.MAX_UNITS)
+        return fraction * self.MAX_UNITS
 
     def read(self, n=None):
         """Return channel reading."""
