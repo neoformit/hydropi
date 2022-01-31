@@ -28,6 +28,7 @@ import logging
 import statistics
 
 from hydropi.config import config
+from .temperature import PipeTemperatureSensor
 from .analog import AnalogInterface
 from .ec import ECSensor
 
@@ -63,6 +64,9 @@ class PHSensor(AnalogInterface):
     M = -7.53323
     C = 26.1926
 
+    TC_M = -0.022
+    TC_C = 1
+
     def __init__(self):
         """Initialise object."""
         self.RANGE_LOWER = config.PH_MIN
@@ -74,6 +78,16 @@ class PHSensor(AnalogInterface):
         """Override super.read to use ECSensor's isolation switch."""
         with ECSensor.isolation():
             return super().read(*args, **kwargs)
+
+    def read_transform(self, value):
+        """Apply temperature correction to reading."""
+        # Worth doing with pipe temperature?
+        ts = PipeTemperatureSensor()
+        t = ts.read()
+        # Linear function between temperature and pH offset
+        offset = self.TC_M * t + self.TC_C
+        logger.debug(f"Offset pH value {value} at {t}{ts.UNIT}: {offset}")
+        return value + offset
 
     def calibrate(self):
         """Calibrate the sensor with standard solutions (pH 4.0 & 6.86).

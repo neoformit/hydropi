@@ -97,9 +97,8 @@ class ECSensor(AnalogInterface):
         """Apply temperature correction to reading."""
         # Worth doing with pipe temperature?
         ts = PipeTemperatureSensor()
-
-        x = ts.read()
+        t = ts.read()
         # Polynomial function between temperature and EC offset
-        offset = self.TC_A * x ** self.TC_E + self.TC_B * x + self.TC_C
-        logger.debug(f"Offset EC value {value} at {x}{ts.UNIT}: {offset}")
+        offset = self.TC_A * t ** self.TC_E + self.TC_B * t + self.TC_C
+        logger.debug(f"Offset EC value {value} at {t}{ts.UNIT}: {offset}")
         return value + offset
