@@ -39,6 +39,16 @@ EXPOSED_CONFIG = {
             'type': 'number',
             'help': 'Duration of each mist release at night (seconds)',
         },
+        {
+            'key': 'MIST_BUMP_FROM_TEMPERATURE_C',
+            'type': 'number',
+            'help': 'Increase mist frequency from this temperature (°C)',
+        },
+        {
+            'key': 'MIST_BUMP_PER_DEGREE',
+            'type': 'number',
+            'help': 'Mist frequency proportional increase per degree C',
+        },
     ),
     'ec': (
         {

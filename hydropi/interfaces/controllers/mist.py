@@ -4,7 +4,7 @@ import time
 import logging
 
 from hydropi.config import config
-from process.check.time import is_quiet_time
+from hydropi.process.check.time import is_quiet_time
 from .controller import AbstractController
 
 logger = logging.getLogger('hydropi')
