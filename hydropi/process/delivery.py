@@ -13,6 +13,7 @@ from hydropi.config import config
 from hydropi.notifications import telegram
 from hydropi.process.check.time import is_quiet_time
 from hydropi.interfaces.controllers.mist import MistController
+from hydropi.interfaces import PipeTemperatureSensor
 from .pause import paused
 
 
@@ -44,4 +45,12 @@ def get_sleep_interval():
         cycle_minutes = config.MIST_INTERVAL_NIGHT_MINUTES
     else:
         cycle_minutes = config.MIST_INTERVAL_MINUTES
+        temp = PipeTemperatureSensor().read()
+        if temp > config.MIST_BUMP_FROM_TEMPERATURE_C:
+            # Increase mist frequency as temperature rises
+            cycle_minutes = (
+                cycle_minutes
+                * (1 - config.MIST_BUMP_PER_DEGREE)
+                ** (temp - config.MIST_BUMP_FROM_TEMPERATURE_C)
+            )
     return 60 * cycle_minutes - config.MIST_DURATION_SECONDS

@@ -65,6 +65,8 @@ MIST_INTERVAL_MINUTES: 5
 MIST_DURATION_SECONDS: 3
 MIST_INTERVAL_NIGHT_MINUTES: 20  # Reduce mist delivery throughout the night to
 MIST_DURATION_NIGHT_SECONDS: 1   # preserve tank pressure til quiet time ends
+MIST_BUMP_FROM_TEMPERATURE_C: 25 # Increase mist frequency from this temp
+MIST_BUMP_PER_DEGREE: 0.04       # Bump misting by this factor per degree C
 
 # Pressure monitoring
 MIN_PRESSURE_PSI: 100                 # Optimal range to maintain
