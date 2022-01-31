@@ -4,6 +4,7 @@ import time
 import logging
 
 from hydropi.config import config
+from process.check.time import is_quiet_time
 from .controller import AbstractController
 
 logger = logging.getLogger('hydropi')
@@ -16,8 +17,11 @@ class MistController(AbstractController):
 
     def mist(self):
         """Deliver a mist pulse."""
-        logger.debug(
-            f"ACTION: MIST {config.MIST_DURATION_SECONDS} SECONDS")
+        seconds = (
+            config.MIST_DURATION_NIGHT_SECONDS if is_quiet_time()
+            else config.MIST_DURATION_SECONDS
+        )
+        logger.debug(f"ACTION: MIST {seconds} SECONDS")
         self.on()
-        time.sleep(config.MIST_DURATION_SECONDS)
+        time.sleep(seconds)
         self.off()

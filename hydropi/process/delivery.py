@@ -41,7 +41,7 @@ def mist():
 def get_sleep_interval():
     """Return seconds to sleep between events."""
     if is_quiet_time():
-        cycle_minutes = config.MIST_CYCLE_NIGHT_MINUTES
+        cycle_minutes = config.MIST_INTERVAL_NIGHT_MINUTES
     else:
-        cycle_minutes = config.MIST_CYCLE_MINUTES
+        cycle_minutes = config.MIST_INTERVAL_MINUTES
     return 60 * cycle_minutes - config.MIST_DURATION_SECONDS

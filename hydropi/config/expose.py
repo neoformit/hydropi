@@ -20,12 +20,12 @@ EXPOSED_CONFIG = {
     ),
     'mist': (
         {
-            'key': 'MIST_CYCLE_MINUTES',
+            'key': 'MIST_INTERVAL_MINUTES',
             'type': 'number',
             'help': 'Interval between mist release (minutes)',
         },
         {
-            'key': 'MIST_CYCLE_NIGHT_MINUTES',
+            'key': 'MIST_INTERVAL_NIGHT_MINUTES',
             'type': 'number',
             'help': 'Interval while misting during quiet time (minutes)',
         },
@@ -33,6 +33,11 @@ EXPOSED_CONFIG = {
             'key': 'MIST_DURATION_SECONDS',
             'type': 'number',
             'help': 'Duration of each mist release (seconds)',
+        },
+        {
+            'key': 'MIST_DURATION_NIGHT_SECONDS',
+            'type': 'number',
+            'help': 'Duration of each mist release at night (seconds)',
         },
     ),
     'ec': (

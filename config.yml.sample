@@ -61,9 +61,10 @@ SWEEP_CYCLE_MINUTES: 10
 MEDIAN_INTERVAL_SECONDS: 0.01    # Pause in seconds between samples
 
 # Misting
-MIST_CYCLE_MINUTES: 5
-MIST_CYCLE_NIGHT_MINUTES: 20     # Reduce misting frequency during quiet time
+MIST_INTERVAL_MINUTES: 5
 MIST_DURATION_SECONDS: 3
+MIST_INTERVAL_NIGHT_MINUTES: 20  # Reduce mist delivery throughout the night to
+MIST_DURATION_NIGHT_SECONDS: 1   # preserve tank pressure til quiet time ends
 
 # Pressure monitoring
 MIN_PRESSURE_PSI: 100                 # Optimal range to maintain
