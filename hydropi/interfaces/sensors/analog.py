@@ -163,7 +163,7 @@ class AnalogInterface:
             time.sleep(self.MEDIAN_INTERVAL_SECONDS)
         volts = statistics.median(readings)
         logger.debug(f"Median volts (n={n}): {volts}")
-        return self._volts_to_units(volts)
+        return self.read_transform(self._volts_to_units(volts))
 
     def get_status_text(self, value):
         """Return appropriate status text for given value."""
