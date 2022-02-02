@@ -5,6 +5,7 @@ import logging
 
 from hydropi.config import config
 from hydropi.interfaces.sensors.pressure import PressureSensor
+from hydropi.notification import telegram
 
 from .controller import AbstractController
 
@@ -54,7 +55,21 @@ class PressurePumpController(AbstractController):
             self.off()
             time.sleep(5)
             cumulative_duration += duration
+            last_psi, last_duration = psi
             psi, duration = _next_duration()
+            psi_increase = psi - last_psi
+            if duration > 10 and psi_increase < 2:
+                logger.error(
+                    "ACTION: Halt pressure restore due to pump"
+                    " failure. A notification has been dispatched.")
+                telegram.notify(
+                    "Pressure restore has reported an increase of"
+                    f"{psi_increase} {self.UNIT} over a duration of"
+                    f" {duration} seconds."
+                    " Pressure pump has been running for a total of"
+                    f" {cumulative_duration} seconds. Please check the"
+                    " pump for trapped air.")
+                return
 
         logger.info(
             f"System pressure restored to {psi}{PressureSensor.UNIT}"
