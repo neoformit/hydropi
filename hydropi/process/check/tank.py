@@ -6,6 +6,7 @@ from threading import Thread
 from hydropi.config import config
 from hydropi.interfaces.sensors.depth import DepthSensor
 from hydropi.interfaces.controllers.water import WaterController
+from hydropi.notifications import telegram
 from hydropi.process.errors import handle_errors
 
 logger = logging.getLogger('hydropi')
@@ -16,6 +17,15 @@ def depth():
     """Check tank depth."""
     sensor = DepthSensor()
     stat = sensor.read()
+
+    if stat < sensor.DANGER_LOWER_L:
+        telegram.notify(
+            f"Tank depth of {stat}L is below the configured DANGER level of"
+            f" {sensor.DANGER_LOWER_L}L")
+    if stat > sensor.DANGER_UPPER_L:
+        telegram.notify(
+            f"Tank depth of {stat}L is above the configured DANGER level of"
+            f" {sensor.DANGER_UPPER_L}L")
 
     # Not yet capable of maintenance
     return stat
