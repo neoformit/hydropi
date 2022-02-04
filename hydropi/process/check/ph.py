@@ -6,12 +6,12 @@ from threading import Thread
 from hydropi.config import config
 from hydropi.interfaces.sensors.ph import PHSensor
 from hydropi.interfaces.controllers.ph import PHController
-from hydropi.process.errors import handle_errors
+from hydropi.process.errors import catchme
 
 logger = logging.getLogger('hydropi')
 
 
-@handle_errors
+@catchme
 def level():
     """Check nutrient levels."""
     sensor = PHSensor()

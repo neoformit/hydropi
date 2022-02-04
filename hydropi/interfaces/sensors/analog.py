@@ -29,6 +29,7 @@ except ModuleNotFoundError:
     MCP3008 = io = None
 
 from hydropi.config import config, STATUS
+from hydropi.process.errors import catchme
 
 logger = logging.getLogger('hydropi')
 
@@ -138,6 +139,7 @@ class AnalogInterface:
             fraction = 1 - fraction
         return fraction * self.MAX_UNITS
 
+    @catchme
     def read(self, n=None):
         """Return channel reading."""
         n = n or self.DEFAULT_MEDIAN_SAMPLES

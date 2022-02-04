@@ -8,6 +8,7 @@ except ModuleNotFoundError:
 
 import time
 import logging
+import traceback
 
 from hydropi.config import config
 from hydropi.notifications import telegram
@@ -15,7 +16,6 @@ from hydropi.process.check.time import is_quiet_time
 from hydropi.interfaces.controllers.mist import MistController
 from hydropi.interfaces import PipeTemperatureSensor
 from .pause import paused
-
 
 logger = logging.getLogger('hydropi')
 
@@ -30,7 +30,9 @@ def mist():
                 MistController().mist()
             time.sleep(get_sleep_interval())
     except Exception as exc:
-        telegram.notify(f"ERROR ENCOUNTERED IN DELIVERY:\n\n{exc}")
+        telegram.notify(
+            f"ERROR ENCOUNTERED IN DELIVERY:\n\n{traceback.format_exc()}")
+        logger.error(traceback.format_exc())
         raise exc
     finally:
         if config.DEVMODE:

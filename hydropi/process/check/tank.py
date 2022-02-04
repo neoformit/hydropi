@@ -7,12 +7,12 @@ from hydropi.config import config
 from hydropi.interfaces.sensors.depth import DepthSensor
 from hydropi.interfaces.controllers.water import WaterController
 from hydropi.notifications import telegram
-from hydropi.process.errors import handle_errors
+from hydropi.process.errors import catchme
 
 logger = logging.getLogger('hydropi')
 
 
-@handle_errors
+@catchme
 def depth():
     """Check tank depth."""
     sensor = DepthSensor()

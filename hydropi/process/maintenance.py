@@ -7,6 +7,7 @@ except ModuleNotFoundError:
     io = None
 
 import logging
+import traceback
 from time import sleep
 from threading import Thread
 
@@ -37,7 +38,9 @@ def sweep():
             else:
                 minutes_without_mix += config.SWEEP_CYCLE_MINUTES
     except Exception as exc:
-        telegram.notify(f"ERROR ENCOUNTERED IN MAINTENANCE:\n\n{exc}")
+        telegram.notify(
+            f"ERROR ENCOUNTERED IN MAINTENANCE:\n\n{traceback.format_exc()}")
+        logger.error(traceback.format_exc())
         raise exc
     finally:
         if config.DEVMODE:

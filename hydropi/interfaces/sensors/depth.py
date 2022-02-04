@@ -15,6 +15,7 @@ except ModuleNotFoundError:
     io = None
 
 from hydropi.config import config
+from hydropi.process.errors import catchme
 from .pressure import PressureSensor
 from .analog import STATUS
 
@@ -75,6 +76,7 @@ class DepthSensor:
         io.cleanup(self.PIN_TRIG)
         io.cleanup(self.PIN_ECHO)
 
+    @catchme
     def read(self, n=None, include_pressure=True,
              depth=False, head=False, echo=False):
         """Return current volume in litres.
@@ -138,11 +140,18 @@ class DepthSensor:
         time.sleep(0.00001)
         io.output(self.PIN_TRIG, 0)
         # Collect end of echo pulse
+        pulse_start = None
         while io.input(self.PIN_ECHO) == 0:
             pulse_start = time.time()
         # Collect end of echo pulse
+        pulse_end = None
         while io.input(self.PIN_ECHO) == 1:
             pulse_end = time.time()
+
+        if not (pulse_end and pulse_start):
+            return logger.error(
+                'Depth sensor read error:'
+                f' pulse_start = {pulse_start}; pulse_end = {pulse_end}')
 
         return pulse_end - pulse_start
 
@@ -156,6 +165,7 @@ class DepthSensor:
             return STATUS.WARNING
         return STATUS.DANGER
 
+    @catchme
     @classmethod
     def get_status(cls):
         """Create interface and return current status data."""

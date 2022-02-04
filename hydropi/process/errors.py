@@ -7,7 +7,7 @@ from hydropi.notifications import telegram
 logger = logging.getLogger('hydropi')
 
 
-def handle_errors(func):
+def catchme(func):
     """Handle and log all uncaught exceptions."""
     def wrapper(*args, **kwargs):
         """Wrap target function to catch errors."""
