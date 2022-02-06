@@ -38,13 +38,18 @@ class AbstractController:
         if os.path.exists(self._deed):
             os.remove(self._deed)
         if self._abandon:
-            return logger.debug(
-                f"{type(self).__name__} has been orphaned."
+            return self.log(
+                "Controller has been orphaned."
                 " Abandoning interface without cleanup.")
         if config.DEVMODE:
             return logger.warning("DEVMODE: skip IO cleanup")
         io.setmode(io.BCM)
         io.cleanup(self.PIN)
+
+    def log(self, msg, debug=False):
+        """Write a message to the log prepended with controller identify."""
+        func = logger.debug if debug else logger.info
+        func(f"{type(self).__name__} | {self.ID}: {msg}")
 
     def run(self, seconds=None):
         """Run interactively (CLI only)."""
@@ -59,8 +64,7 @@ class AbstractController:
     def on(self, abandon=False):
         """Activate the device."""
         self._abandon = abandon
-        logger.info(
-            f"{type(self).__name__}: switch output state to {self.ON}:ON")
+        self.log(f"Switch output state to {self.ON}:ON")
         self._set_state(self.ON)
         self._claim_ownership()
 
@@ -68,12 +72,10 @@ class AbstractController:
         """Deactivate the device."""
         owners = self._revoke_ownership()
         if owners:
-            return logger.info(
-                f"{type(self).__name__}:"
-                " OWNERSHIP REVOKED FROM SHARED INTERFACE: ownership has been"
-                f" delegated to threads {owners}")
-        logger.info(
-            f"{type(self).__name__}: switch output state to {self.OFF}:OFF")
+            return self.log(
+                "Ownership revoked from shared interface - ownership has been"
+                f" delegated to thread(s) {owners}")
+        self.log(f"Switch output state to {self.OFF}:OFF")
         self._set_state(self.OFF)
 
     def _set_state(self, state):
@@ -95,13 +97,13 @@ class AbstractController:
     def _claim_ownership(self):
         """Claim ownership of this interface by writing a deed."""
         if self.ID not in self._get_owners():
-            logger.debug(f'Writing deed for ID {self.ID}: {self._deed}')
+            self.log(f'Writing deed to {self._deed}')
             with open(self._deed, 'w'):
                 pass
 
     def _revoke_ownership(self):
         """Revoke ownership of this interface from the deed."""
-        logger.debug(f'Revoke deed for {self.ID}')
+        self.log('Revoke deed.')
         owners = self._get_owners()
         try:
             owners.remove(self.ID)
@@ -110,7 +112,7 @@ class AbstractController:
             # Somehow not an owner... but that's ok we're revoking anyways
             pass
         if owners:
-            logger.debug(f'Remaining owners: {owners}')
+            self.log(f'Remaining owners: {owners}')
             return owners
         return False
 
