@@ -5,7 +5,7 @@ import logging
 
 from hydropi.config import config
 from hydropi.interfaces.sensors.pressure import PressureSensor
-from hydropi.notification import telegram
+from hydropi.notifications import telegram
 
 from .controller import AbstractController
 

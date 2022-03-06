@@ -4,7 +4,7 @@
 
 -- Add sync config here
 
-HOST     = "192.168.1.110"
+HOST     = "192.168.1.118"
 USER     = "pi"             -- Remote user
 SRC_DIR  = "/home/cameron/dev/hydro/hydropi/"   -- Trailing slash syncs dir contents only
 DEST_DIR = "/home/pi/hydro/hydropi"
