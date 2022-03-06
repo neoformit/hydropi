@@ -6,8 +6,10 @@ except ModuleNotFoundError:
     print("WARNING: Can't import Pi packages - assume developer mode")
     io = None
 
+import os
 import time
 import logging
+import traceback
 
 from hydropi.config import config
 from hydropi.notifications import telegram
@@ -31,6 +33,8 @@ def mist():
             time.sleep(get_sleep_interval())
     except Exception as exc:
         telegram.notify(f"ERROR ENCOUNTERED IN DELIVERY:\n\n{exc}")
+        with open(os.path.join(config.TEMP_DIR, 'stderr'), 'w') as f:
+            f.write(traceback.format_exc())
         raise exc
     finally:
         if config.DEVMODE:
