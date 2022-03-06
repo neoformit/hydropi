@@ -55,7 +55,7 @@ class PressurePumpController(AbstractController):
             self.off()
             time.sleep(5)
             cumulative_duration += duration
-            last_psi, last_duration = psi
+            last_psi = psi
             psi, duration = _next_duration()
             psi_increase = psi - last_psi
             if duration > 10 and psi_increase < 2:
