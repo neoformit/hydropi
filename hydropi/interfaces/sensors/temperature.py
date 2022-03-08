@@ -37,12 +37,22 @@ class PipeTemperatureSensor():
 
     def read(self):
         """Read temperature."""
-        if config.DEVMODE:
-            logger.warning("DEVMODE: spoofed temperature reading")
-            return round(random.uniform(18, 45), self.DECIMAL_POINTS)
-        with open(self.DEVICE) as f:
-            data = f.read().split('\n')[1].split('t=')[1]
-        return round(int(data) / 1000, self.DECIMAL_POINTS)
+        try:
+            if config.DEVMODE:
+                logger.warning("DEVMODE: spoofed temperature reading")
+                return round(random.uniform(18, 45), self.DECIMAL_POINTS)
+            with open(self.DEVICE) as f:
+                content = f.read()
+                logger.debug(f"READ temperature:\n{content}")
+                data = f.read().split('\n')[1].split('t=')[1]
+            return round(int(data) / 1000, self.DECIMAL_POINTS)
+        except Exception as exc:
+            logger.error(
+                "Error reading PipeTemperature sensor from OneWire"
+                f" interface. Read content:\n{content}"
+                + str(exc)
+            )
+        return 0
 
 
 class TankTemperatureSensor(AnalogInterface):
