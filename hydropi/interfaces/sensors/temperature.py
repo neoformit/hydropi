@@ -5,6 +5,7 @@ import random
 import logging
 
 from hydropi.config import config
+from hydropi.notifications import telegram
 from .analog import AnalogInterface
 
 logger = logging.getLogger('hydropi')
@@ -47,11 +48,13 @@ class PipeTemperatureSensor():
                 data = f.read().split('\n')[1].split('t=')[1]
             return round(int(data) / 1000, self.DECIMAL_POINTS)
         except Exception as exc:
-            logger.error(
+            message = (
                 "Error reading PipeTemperature sensor from OneWire"
-                f" interface. Read content:\n{content}"
+                f" interface. Read content:\n{content}\n\n"
                 + str(exc)
             )
+            telegram.notify(message)
+            logger.error(message)
         return 0
 
 
