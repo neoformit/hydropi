@@ -45,7 +45,7 @@ class PipeTemperatureSensor():
             with open(self.DEVICE) as f:
                 content = f.read()
                 logger.debug(f"READ temperature:\n{content}")
-                data = f.read().split('\n')[1].split('t=')[1]
+                data = content.split('\n')[1].split('t=')[1]
             return round(int(data) / 1000, self.DECIMAL_POINTS)
         except Exception as exc:
             message = (
