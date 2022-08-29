@@ -6,14 +6,12 @@ except ModuleNotFoundError:
     print("WARNING: Can't import Pi packages - assume developer mode")
     io = None
 
-import os
 import time
 import logging
-import traceback
 
 from hydropi.config import config
-from hydropi.notifications import telegram
 from hydropi.process.check.time import is_quiet_time
+from hydropi.process.errors import ErrorWatcher
 from hydropi.interfaces.controllers.mist import MistController
 from hydropi.interfaces import PipeTemperatureSensor
 from .pause import paused
@@ -23,21 +21,18 @@ logger = logging.getLogger('hydropi')
 
 def mist():
     """Periodically release nutrient mist."""
+    ew = ErrorWatcher()
     try:
         while True:
-            if paused():
-                logger.debug("Skip mist round while paused")
-            else:
-                MistController().mist()
-            time.sleep(get_sleep_interval())
-    except Exception as exc:
-        tb = traceback.format_exc()
-        telegram.notify(
-            f"ERROR ENCOUNTERED IN DELIVERY:\n\n{tb}")
-        logger.error(tb)
-        with open(os.path.join(config.TEMP_DIR, 'stderr'), 'w') as f:
-            f.write(tb)
-        raise exc
+            try:
+                if paused():
+                    logger.debug("Skip mist round while paused")
+                else:
+                    MistController().mist()
+                time.sleep(get_sleep_interval())
+                ew.reset()
+            except Exception as exc:
+                ew.catch(exc, message="ERROR ENCOUNTERED IN DELIVERY")
     finally:
         if config.DEVMODE:
             logger.warning("DEVMODE: skip IO cleanup")

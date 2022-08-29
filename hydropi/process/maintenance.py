@@ -7,13 +7,12 @@ except ModuleNotFoundError:
     io = None
 
 import logging
-import traceback
 from time import sleep
 from threading import Thread
 
 from hydropi.config import config
 from hydropi.process import check
-from hydropi.notifications import telegram
+from hydropi.process.errors import ErrorWatcher
 from hydropi.interfaces import PipeTemperatureSensor
 from hydropi.interfaces import MixPumpController
 from .pause import paused
@@ -25,23 +24,23 @@ def sweep():
     """Perform sweep, log readings and adjust."""
     minutes_without_mix = 0
     try:
-        while True:
-            if paused():
-                logger.info("MAINTENANCE PAUSED: Skipping sweep round")
-            else:
-                sweep_and_restore()
-            sleep(60 * config.SWEEP_CYCLE_MINUTES)
-            if minutes_without_mix >= config.MIX_EVERY_MINUTES:
-                # Run mix pump to aerate nutrients
-                Thread(target=MixPumpController().mix).start()
-                minutes_without_mix = 0
-            else:
-                minutes_without_mix += config.SWEEP_CYCLE_MINUTES
-    except Exception as exc:
-        telegram.notify(
-            f"ERROR ENCOUNTERED IN MAINTENANCE:\n\n{traceback.format_exc()}")
-        logger.error(traceback.format_exc())
-        raise exc
+        ew = ErrorWatcher()
+        try:
+            while True:
+                if paused():
+                    logger.info("MAINTENANCE PAUSED: Skipping sweep round")
+                else:
+                    sweep_and_restore()
+                sleep(60 * config.SWEEP_CYCLE_MINUTES)
+                if minutes_without_mix >= config.MIX_EVERY_MINUTES:
+                    # Run mix pump to aerate nutrients
+                    Thread(target=MixPumpController().mix).start()
+                    minutes_without_mix = 0
+                else:
+                    minutes_without_mix += config.SWEEP_CYCLE_MINUTES
+                ew.reset()
+        except Exception as exc:
+            ew.catch(exc, message="ERROR ENCOUNTERED IN MAINTENANCE")
     finally:
         if config.DEVMODE:
             logger.warning("DEVMODE: skip IO cleanup")
