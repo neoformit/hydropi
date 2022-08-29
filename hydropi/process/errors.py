@@ -16,9 +16,10 @@ def catchme(func):
         """Wrap target function to catch errors."""
         try:
             return func(*args, **kwargs)
-        except Exception as exc:
-            logger.error(exc)
-            telegram.notify(exc)
+        except Exception:
+            tb = traceback.format_exc()
+            logger.error(tb)
+            telegram.notify(tb)
     return wrapper
 
 
