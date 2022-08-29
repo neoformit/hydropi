@@ -1,6 +1,8 @@
 [Unit]
 Description=Hydropi
 After=network.target
+StartLimitIntervalSec=60
+StartLimitBurst=3
 
 [Service]
 PIDFile=/run/hydropi/pid
@@ -11,6 +13,8 @@ Environment="PATH=/home/pi/hydro/venv/bin"
 ExecStart=/home/pi/hydro/venv/bin/python run.py
 ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s TERM $MAINPID
+Restart=on-failure
+RestartSec=15
 PrivateTmp=true
 
 [Install]

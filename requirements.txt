@@ -1,5 +1,5 @@
 adafruit-blinka
-adafruit-circuitpython-mcp3xxx
+Adafruit-MCP3008
 pyyaml
 routes
 psycopg2-binary

@@ -37,5 +37,8 @@ CONTROLLERS = {
 
 def cleanup():
     """Clean up on termination."""
+    # This doesn't make sense
+    return
+    
     for C in CONTROLLERS.values():
-        C.__del__()
+        C.__del__(None)

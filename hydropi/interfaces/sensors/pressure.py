@@ -40,4 +40,4 @@ class PressureSensor(AnalogInterface):
         )
         logger.debug(
             f'{type(self).__name__} READ tank volume {litres:.2f} litres')
-        return litres
+        return max(litres, 0)

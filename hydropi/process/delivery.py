@@ -6,6 +6,7 @@ except ModuleNotFoundError:
     print("WARNING: Can't import Pi packages - assume developer mode")
     io = None
 
+import os
 import time
 import logging
 import traceback
@@ -30,9 +31,12 @@ def mist():
                 MistController().mist()
             time.sleep(get_sleep_interval())
     except Exception as exc:
+        tb = traceback.format_exc()
         telegram.notify(
-            f"ERROR ENCOUNTERED IN DELIVERY:\n\n{traceback.format_exc()}")
-        logger.error(traceback.format_exc())
+            f"ERROR ENCOUNTERED IN DELIVERY:\n\n{tb}")
+        logger.error(tb)
+        with open(os.path.join(config.TEMP_DIR, 'stderr'), 'w') as f:
+            f.write(tb)
         raise exc
     finally:
         if config.DEVMODE:

@@ -1,10 +1,12 @@
 """Read the temperature in the nutrient tank."""
 
 import os
+import time
 import random
 import logging
 
 from hydropi.config import config
+from hydropi.notifications import telegram
 from .analog import AnalogInterface
 
 logger = logging.getLogger('hydropi')
@@ -23,6 +25,7 @@ class PipeTemperatureSensor():
     UNIT = '°C'
     DEVICE = '/sys/bus/w1/devices/28-01131b576dcc/w1_slave'
     DECIMAL_POINTS = 1
+    W1_MAX_RETRY = 5
 
     def __init__(self):
         """Initialize interface."""
@@ -37,12 +40,32 @@ class PipeTemperatureSensor():
 
     def read(self):
         """Read temperature."""
-        if config.DEVMODE:
-            logger.warning("DEVMODE: spoofed temperature reading")
-            return round(random.uniform(18, 45), self.DECIMAL_POINTS)
-        with open(self.DEVICE) as f:
-            data = f.read().split('\n')[1].split('t=')[1]
-        return round(int(data) / 1000, self.DECIMAL_POINTS)
+        try:
+            if config.DEVMODE:
+                logger.warning("DEVMODE: spoofed temperature reading")
+                return round(random.uniform(18, 45), self.DECIMAL_POINTS)
+            retries = 0
+            while True:
+                with open(self.DEVICE) as f:
+                    content = f.read()
+                if not content.strip(' \n'):
+                    # Device returned null - retry
+                    time.sleep(0.5)
+                    if retries <= self.W1_MAX_RETRY:
+                        retries += 1
+                        continue
+                logger.debug(f"READ temperature:\n{content}")
+                data = content.split('\n')[1].split('t=')[1]
+                return round(int(data) / 1000, self.DECIMAL_POINTS)
+        except Exception:
+            message = (
+                "Error reading PipeTemperature sensor from OneWire"
+                f" interface. Null value returned {self.W1_MAX_RETRY} after"
+                " attempts."
+            )
+            telegram.notify(message)
+            logger.error(message)
+        return 0
 
 
 class TankTemperatureSensor(AnalogInterface):
