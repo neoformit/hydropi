@@ -91,13 +91,13 @@ class DB:
                 f"config.set received empty config value: {value}")
         if not self.get(key):
             sql = self.sql_add_key(key, value)
-            logger.debug("SQL ADD KEY:\n" + sql)
+            logger.info("SQL ADD KEY:\n" + sql)
         else:
             # Assert that value can be cast to field type
             type_str = self.select(self.sql_get_key(key))[0][1]
             TYPECAST[type_str](value)  # will raise ValueError if not castable
             sql = self.sql_set_key(key, value)
-            logger.debug("SQL SET KEY:\n" + sql)
+            logger.info("SQL SET KEY:\n" + sql)
         self.execute(sql)
 
     def rm(self, key):
