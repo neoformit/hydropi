@@ -29,15 +29,16 @@ def sweep():
             while True:
                 if paused():
                     logger.info("MAINTENANCE PAUSED: Skipping sweep round")
+                    sleep(60 * config.SWEEP_CYCLE_MINUTES)
                 else:
                     sweep_and_restore()
-                sleep(60 * config.SWEEP_CYCLE_MINUTES)
-                if minutes_without_mix >= config.MIX_EVERY_MINUTES:
-                    # Run mix pump to aerate nutrients
-                    Thread(target=MixPumpController().mix).start()
-                    minutes_without_mix = 0
-                else:
-                    minutes_without_mix += config.SWEEP_CYCLE_MINUTES
+                    sleep(60 * config.SWEEP_CYCLE_MINUTES)
+                    if minutes_without_mix >= config.MIX_EVERY_MINUTES:
+                        # Run mix pump to aerate nutrients
+                        Thread(target=MixPumpController().mix).start()
+                        minutes_without_mix = 0
+                    else:
+                        minutes_without_mix += config.SWEEP_CYCLE_MINUTES
                 ew.reset()
         except Exception as exc:
             ew.catch(exc, message="ERROR ENCOUNTERED IN MAINTENANCE")
