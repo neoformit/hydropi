@@ -89,13 +89,19 @@ class DB:
         if value == '' or value is None:
             raise ValueError(
                 f"config.set received empty config value: {value}")
-        if not self.get(key):
+        if self.get(key) is None:
             sql = self.sql_add_key(key, value)
             logger.info("SQL ADD KEY:\n" + sql)
         else:
             # Assert that value can be cast to field type
             type_str = self.select(self.sql_get_key(key))[0][1]
-            TYPECAST[type_str](value)  # will raise ValueError if not castable
+            try:
+                TYPECAST[type_str](value)
+            except ValueError as exc:
+                logger.error(
+                    'Failed to cast type while setting config value:'
+                    f' key={key}; value={value}; type={type_str}')
+                raise exc
             sql = self.sql_set_key(key, value)
             logger.info("SQL SET KEY:\n" + sql)
         self.execute(sql)
@@ -156,10 +162,17 @@ class DB:
         assert type_str in TYPECAST, (
             "Config value type not recognised.\n"
             f"{key}: {type_str}")
-        if type(value) == str:
+        if type_str == 'str':
             value = f"'{value}'"
-        if type(value) == bool:
+        if type_str == 'bool':
+            if str(value).lower() in ('true', '1'):
+                value = 1
+            else:
+                value = 0
+        if type_str == 'int':
             value = int(value)
+        if type_str == 'float':
+            value = float(value)
         return value, type_str
 
     def get_key_type(self, key):
