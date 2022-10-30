@@ -5,10 +5,8 @@ import sqlite3
 import unittest
 from hydropi.config.db import DB
 
-# Test is working but not passing on two counts
 
-
-class MOCK_CONFIG:
+class MockConfig:
     """Mocked config object."""
 
     DATABASE = {
@@ -28,10 +26,10 @@ class DatabaseTestCase(unittest.TestCase):
 
     def setUp(self):
         """Create db context."""
-        self.db = DB(MOCK_CONFIG, assert_schema=False)
+        self.db = DB(MockConfig, assert_schema=False)
         self.data = {
-            'KEY_A': MOCK_CONFIG.KEY_A,
-            'KEY_B': MOCK_CONFIG.KEY_B,
+            'KEY_A': MockConfig.KEY_A,
+            'KEY_B': MockConfig.KEY_B,
         }
         SQL_CREATE_TABLES = (
             f"""CREATE TABLE {self.db.CONFIG_TABLE_NAME}
@@ -50,7 +48,7 @@ class DatabaseTestCase(unittest.TestCase):
     def tearDown(self):
         """Destroy database context."""
         self.db.connection.close()
-        os.remove(MOCK_CONFIG.DATABASE['SQLITE_PATH'])
+        os.remove(MockConfig.DATABASE['SQLITE_PATH'])
 
     def test_can_create_config(self):
         """DB can create config from input."""
