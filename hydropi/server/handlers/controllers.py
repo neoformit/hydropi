@@ -19,6 +19,11 @@ def action(name, action):
     Thread(target=target, kwargs=action.get('kwargs')).start()
 
 
+def is_paused():
+    """Return state of service pause."""
+    return int(pause.paused())
+
+
 def set_pause(state):
     """Enable and disable service pause."""
     pause.set(state)
