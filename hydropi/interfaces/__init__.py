@@ -15,7 +15,9 @@ from .controllers import (
     MixPumpController,
     WaterController,
     PressurePumpController,
+    clean,
 )
+from .controllers import clean
 
 SENSORS = {
     'ec': ECSensor,
@@ -37,8 +39,8 @@ CONTROLLERS = {
 
 def cleanup():
     """Clean up on termination."""
-    # This doesn't make sense
-    return
-    
-    for C in CONTROLLERS.values():
-        C.__del__(None)
+    controllers.clean.deeds()
+
+    # This doesn't make sense until we have sensible __del__ methods:
+    # for C in CONTROLLERS.values():
+    #     C.__del__(None)
