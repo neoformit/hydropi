@@ -4,9 +4,9 @@
 
 -- Add sync config here
 
-HOST     = "192.168.1.118"
+HOST     = "192.168.1.10"
 USER     = "pi"             -- Remote user
-SRC_DIR  = "/home/cameron/dev/hydro/hydropi/"   -- Trailing slash syncs dir contents only
+SRC_DIR  = "/home/cameron/dev/hydropi/"   -- Trailing slash syncs dir contents only
 DEST_DIR = "/home/pi/hydro/hydropi"
 RSA_KEY  = "~/.ssh/neoform.pem"
 EXCLUDE  = { '.git' , 'sync', '.lsyncd.lua', 'nohup.out', '*.log', 'config.yml'}
