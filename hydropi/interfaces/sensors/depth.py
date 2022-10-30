@@ -165,7 +165,6 @@ class DepthSensor:
             return STATUS.WARNING
         return STATUS.DANGER
 
-    @catchme
     @classmethod
     def get_status(cls):
         """Create interface and return current status data."""
