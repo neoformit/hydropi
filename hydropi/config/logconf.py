@@ -54,7 +54,7 @@ def configure(config):
         'loggers': {
             'hydropi': {
                 'level': 'DEBUG',
-                'handlers': ['console', 'file'],
+                'handlers': ['console', 'file', 'debug_file'],
                 'propagate': True,
             },
         }
