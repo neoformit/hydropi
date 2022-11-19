@@ -18,7 +18,7 @@ def depth():
     sensor = DepthSensor()
     stat = sensor.read()
 
-    if stat < sensor.DANGER_LOWER_L:
+    if stat < sensor.DANGER_LOWER_L and stat > 0:
         telegram.notify(
             f"Tank depth of {stat}L is below the configured DANGER level of"
             f" {sensor.DANGER_LOWER_L}L")
