@@ -98,24 +98,24 @@ class DepthSensor:
 
         if echo:
             return td
-        if head:
+        elif head:
             r = round(time_to_distance(td), None)
             logger.info(f"{type(self).__name__} READ: HEAD {r}mm (n={n})")
             return r
-        if depth:
+        elif depth:
             r = round(time_to_depth(td), None)
             logger.info(f"{type(self).__name__} READ: DEPTH {r}mm (n={n})")
-            return r
-        vol = time_to_volume(td)
-        logger.debug(
-            f"{type(self).__name__} READ: tank volume excluding pressure"
-            f" {round(vol, self.DECIMAL_POINTS)} litres")
-        if include_pressure:
-            ps = PressureSensor()
-            vol += ps.get_tank_volume()
-        r = round(vol, self.DECIMAL_POINTS)
-        logger.info(f"{type(self).__name__} READ: {r}{self.UNIT} (n={n})")
-        return r
+        else:
+            vol = time_to_volume(td)
+            logger.debug(
+                f"{type(self).__name__} READ: tank volume excluding pressure"
+                f" {round(vol, self.DECIMAL_POINTS)} litres")
+            if include_pressure:
+                ps = PressureSensor()
+                vol += ps.get_tank_volume()
+            r = round(vol, self.DECIMAL_POINTS)
+            logger.info(f"{type(self).__name__} READ: {r}{self.UNIT} (n={n})")
+        return max(r, 0)
 
     def _read_median(self, n):
         """Return median echo time from <n> samples."""
