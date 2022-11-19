@@ -33,11 +33,15 @@ class PressureSensor(AnalogInterface):
     def get_tank_volume(self):
         """Estimate tank volume in litres based on the current pressure."""
         psi = self.read()
-        litres = (
-            config.PRESSURE_TANK_VOLUME_L
-            * (psi / config.PRESSURE_TANK_BASE_PSI - 1)
-            / (psi / config.PRESSURE_TANK_BASE_PSI)
-        )
+        try:
+            litres = (
+                config.PRESSURE_TANK_VOLUME_L
+                * (psi / config.PRESSURE_TANK_BASE_PSI - 1)
+                / (psi / config.PRESSURE_TANK_BASE_PSI)
+            )
+        except ZeroDivisionError as exc:
+            logger.error(f"Zero division error on pressure sensor read: {exc}")
+            litres = 0
         logger.debug(
             f'{type(self).__name__} READ tank volume {litres:.2f} litres')
         return max(litres, 0)
