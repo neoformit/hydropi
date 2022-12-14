@@ -5,6 +5,11 @@ DEBUG: True                 # Extra logging output
 CONFIG_DIR: '~/.hydropi'
 DAEMON_HTTP_PORT: 2021
 
+# Keys
+# ------------------------------------------------------------------------------
+
+WEATHER_API_KEY: xxxxx  # https://weatherapi.com/
+
 # Notifications
 # ------------------------------------------------------------------------------
 

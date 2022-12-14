@@ -1,6 +1,12 @@
 """Interface for reading nutrient reservoir depth.
 
-https://tutorials-raspberrypi.com/raspberry-pi-ultrasonic-sensor-hc-sr04/
+TODO: need to account for pressure changes in the pipe resulting from
+temperature flux... could be interesting :(
+When it cools down it will create negative pressure and suck up some water,
+making it seem shallower than it is. The hottest temperature will then give the
+"true" depth reading and everything else will be relative to that.
+  - 8% expansion from 10 -> 35C = 4.8L
+
 """
 
 import time
@@ -36,7 +42,8 @@ I2C_PATH = '/dev/i2c-1'
 
 if not config.DEVMODE and not os.path.exists(I2C_PATH):
     raise OSError(f'Path not found: {I2C_PATH}\n'
-                  'You must enable I2C for the raspberry pi.')
+                  'Barometric depth sensor requires I2C to be enabled on the'
+                  ' raspberry pi (run `sudo raspi-config` and reboot).')
 
 
 class DepthSensor:
@@ -53,7 +60,7 @@ class DepthSensor:
     TEXT = 'depth'
     UNIT = 'L'
     DECIMAL_POINTS = 1
-    PIN_SCL = config.PIN_DEPTH_SCL  # TODO: configure
+    PIN_SCL = config.PIN_DEPTH_SCL  # TODO: config.yml
     PIN_SDA = config.PIN_DEPTH_SDA
     MEDIAN_INTERVAL_SECONDS = 0.05 or config.MEDIAN_INTERVAL_SECONDS
     DEFAULT_MEDIAN_SAMPLES = 5
@@ -123,6 +130,10 @@ class DepthSensor:
             readings.append(self.read(n=1, pressure=True))
             time.sleep(self.MEDIAN_INTERVAL_SECONDS)
         return statistics.median(readings)
+
+    def _get_pressure_hpa(self):
+        """Read pressure from BMP280 sensor."""
+        return self.bmp280.get_pressure()
 
     def get_status_text(self, value):
         """Return appropriate status text for given value."""
