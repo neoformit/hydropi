@@ -4,3 +4,5 @@ pyyaml
 routes
 psycopg2-binary
 requests
+bmp280
+smbus2
