@@ -8,6 +8,9 @@ import math
 import random
 import logging
 import statistics
+from bmp280 import BMP280
+from smbus2 import SMBus
+
 try:
     import RPi.GPIO as io
 except ModuleNotFoundError:
@@ -21,26 +24,37 @@ from .analog import STATUS
 
 logger = logging.getLogger('hydropi')
 
-SONIC_SPEED = 34300  # cm/sec
-H = 50.0      # Total height of nutrient bin (reservoir)
-RT = 21.7     # Radius top
-RB = 17.5     # Radius bottom
+H = 50.0                  # Total height of nutrient bin (reservoir)
+RT = 21.7                 # Radius top
+RB = 17.5                 # Radius bottom
+
+# Pressure -> depth linear constants
+HPA_TO_DEPTH_M = 10.0874
+HPA_TO_DEPTH_C = -10122
+
+I2C_PATH = '/dev/i2c-1'
+
+if not config.DEVMODE and not os.path.exists(I2C_PATH):
+    raise OSError(f'Path not found: {I2C_PATH}\n'
+                  'You must enable I2C for the raspberry pi.')
 
 
 class DepthSensor:
     """Interface for digital depth sensor.
 
-    A median sample with n=15 and delay=0.01 sec gives +/- 2mm reading.
+    Digital (I2C) barometric sensor uses accurate pressure readings as a proxy
+    for depth inside a sealed pipe, where pressure increases linearly with
+    depth.
 
-    Works better with clear space between sensor and object i.e. no adjacent
-    wall or other object.
+    Sample of n=5 is more than sufficient as readings are usually very
+    consistent.
     """
 
     TEXT = 'depth'
     UNIT = 'L'
     DECIMAL_POINTS = 1
-    PIN_TRIG = config.PIN_DEPTH_TRIG
-    PIN_ECHO = config.PIN_DEPTH_ECHO
+    PIN_SCL = config.PIN_DEPTH_SCL  # TODO: configure
+    PIN_SDA = config.PIN_DEPTH_SDA
     MEDIAN_INTERVAL_SECONDS = 0.05 or config.MEDIAN_INTERVAL_SECONDS
     DEFAULT_MEDIAN_SAMPLES = 5
 
@@ -59,26 +73,15 @@ class DepthSensor:
         self.DANGER_UPPER_L = self.VOLUME_TARGET_L * (
             1 + config.VOLUME_TOLERANCE * 2)
         if config.DEVMODE:
-            logger.warning("DEVMODE: configure sensor without ADC interface")
+            logger.warning("DEVMODE: configure sensor without I2C interface")
             return
-        io.setmode(io.BCM)
-        io.setup(self.PIN_TRIG, io.OUT)
-        io.setup(self.PIN_ECHO, io.IN)
-        io.output(self.PIN_TRIG, 0)
-        time.sleep(1)
-
-    def __del__(self):
-        """Clean up IO hardware on termination."""
-        if config.DEVMODE:
-            logger.warning("DEVMODE: skip IO cleanup")
-            return
-        io.setmode(io.BCM)
-        io.cleanup(self.PIN_TRIG)
-        io.cleanup(self.PIN_ECHO)
+        # Initialise the BMP280
+        self.bus = SMBus(1)
+        self.bmp280 = BMP280(i2c_dev=bus)
 
     @catchme
-    def read(self, n=None, include_pressure=True,
-             depth=False, head=False, echo=False):
+    def read(self, n=None, pressure=False, include_pressure_tank=True,
+             depth=False):
         """Return current volume in litres.
 
         include_pressure=True adds on the estimated volume stored in the
@@ -92,25 +95,21 @@ class DepthSensor:
         """
         n = n or self.DEFAULT_MEDIAN_SAMPLES
         if n > 1:
-            td = self._read_median(n)
+            hpa = self._read_median(n)
         else:
-            td = self._get_echo_time()
+            hpa = self._get_pressure_hpa()
 
-        if echo:
-            return td
-        elif head:
-            r = round(time_to_distance(td), None)
-            logger.info(f"{type(self).__name__} READ: HEAD {r}mm (n={n})")
-            return r
+        if pressure:
+            return hpa
         elif depth:
-            r = round(time_to_depth(td), None)
+            r = round(hpa_to_depth(hpa), None)
             logger.info(f"{type(self).__name__} READ: DEPTH {r}mm (n={n})")
         else:
-            vol = time_to_volume(td)
+            vol = hpa_to_volume(td)
             logger.debug(
                 f"{type(self).__name__} READ: tank volume excluding pressure"
                 f" {round(vol, self.DECIMAL_POINTS)} litres")
-            if include_pressure:
+            if include_pressure_tank:
                 ps = PressureSensor()
                 vol += ps.get_tank_volume()
             r = round(vol, self.DECIMAL_POINTS)
@@ -121,39 +120,9 @@ class DepthSensor:
         """Return median echo time from <n> samples."""
         readings = []
         for i in range(n):
-            readings.append(self.read(n=1, echo=True))
+            readings.append(self.read(n=1, pressure=True))
             time.sleep(self.MEDIAN_INTERVAL_SECONDS)
         return statistics.median(readings)
-
-    def _get_echo_time(self):
-        """Collect a reading from the ultrasonic sensor."""
-        if config.DEVMODE:
-            logger.warning(
-                "DEVMODE: spoof ultrasonic reading")
-            mu = 6.5 * config.VOLUME_TARGET_L / SONIC_SPEED
-            return random.normalvariate(
-                mu,
-                mu * config.VOLUME_TOLERANCE,
-            )
-
-        io.output(self.PIN_TRIG, 1)
-        time.sleep(0.00001)
-        io.output(self.PIN_TRIG, 0)
-        # Collect end of echo pulse
-        pulse_start = None
-        while io.input(self.PIN_ECHO) == 0:
-            pulse_start = time.time()
-        # Collect end of echo pulse
-        pulse_end = None
-        while io.input(self.PIN_ECHO) == 1:
-            pulse_end = time.time()
-
-        if not (pulse_end and pulse_start):
-            return logger.error(
-                'Depth sensor read error:'
-                f' pulse_start = {pulse_start}; pulse_end = {pulse_end}')
-
-        return pulse_end - pulse_start
 
     def get_status_text(self, value):
         """Return appropriate status text for given value."""
@@ -215,35 +184,22 @@ class DepthSensor:
             time.sleep(1)
 
 
-def time_to_depth(seconds):
-    """Convert pulse time to depth."""
-    return round(config.TANK_HEIGHT_MM - (
-        (seconds * SONIC_SPEED)  # time -> distance
-        / 2                      # There and back
-        * 10                     # cm -> mm
-    ))
+def hpa_to_depth(hpa):
+    """Convert pressure (hPa) to depth in mm."""
+    return round(hp * HPA_TO_DEPTH_M + HPA_TO_DEPTH_C)
 
 
-def time_to_distance(seconds):
-    """Convert pulse time to distance."""
-    return round(
-        (seconds * SONIC_SPEED)  # time -> distance
-        / 2                      # There and back
-        * 10                     # cm -> mm
-    )
-
-
-def time_to_volume(seconds):
-    """Estimate volume (L) for given echo response in a 60L bin."""
-    mm = time_to_depth(seconds)
+def hpa_to_volume(hpa):
+    """Estimate volume (L) for given pressure (hPa) in a 60L bin."""
+    mm = hpa_to_depth(hpa)
     return depth_to_volume(mm)
 
 
 def depth_to_volume(mm):
     """Estimate volume in litres for given depth in mm."""
-    d = mm / 10   # Convert to cm
+    depth_cm = mm / 10
     rd = RT - RB  # Radius difference
 
     return (
-        (rd * d / H) / 2 + RB
-    )**2 * math.pi * d / 1000
+        (rd * depth_cm / H) / 2 + RB
+    )**2 * math.pi * depth_cm / 1000
