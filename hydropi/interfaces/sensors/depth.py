@@ -25,8 +25,8 @@ except ModuleNotFoundError:
 
 from hydropi.config import config
 from hydropi.process.errors import catchme
+from hydropi.interfaces.utils import WeatherAPI
 from .pressure import PressureSensor
-from .analog import STATUS
 
 logger = logging.getLogger('hydropi')
 
@@ -36,7 +36,11 @@ RB = 17.5                 # Radius bottom
 
 # Pressure -> depth linear constants
 HPA_TO_DEPTH_M = 10.0874
-HPA_TO_DEPTH_C = -10122
+HPA_TO_DEPTH_C = 0
+
+# Pressure -> depth temperature compensation
+DEPTH_ADJUST_PER_C = 1.0
+DEPTH_ADJUST_FROM_C = 10
 
 I2C_PATH = '/dev/i2c-1'
 
@@ -52,6 +56,10 @@ class DepthSensor:
     Digital (I2C) barometric sensor uses accurate pressure readings as a proxy
     for depth inside a sealed pipe, where pressure increases linearly with
     depth.
+
+    This sensor also provides an accurate temperature reading which can be used
+    to calibrate the depth reading, since internal pressure also varies with
+    temperature.
 
     Sample of n=5 is more than sufficient as readings are usually very
     consistent.
@@ -105,11 +113,13 @@ class DepthSensor:
             hpa = self._read_median(n)
         else:
             hpa = self._get_pressure_hpa()
+            temp_c = self._get_temperature_c()
+            logger.info(f"Tank temperature: {temp_c:.1f}C")
 
         if pressure:
             return hpa
         elif depth:
-            r = round(hpa_to_depth(hpa), None)
+            r = round(hpa_to_depth(hpa, temp_c), None)
             logger.info(f"{type(self).__name__} READ: DEPTH {r}mm (n={n})")
         else:
             vol = hpa_to_volume(td)
@@ -132,8 +142,14 @@ class DepthSensor:
         return statistics.median(readings)
 
     def _get_pressure_hpa(self):
-        """Read pressure from BMP280 sensor."""
-        return self.bmp280.get_pressure()
+        """Read pressure from BMP280 and convert to relative pressure."""
+        abs_pressure = self.bmp280.get_pressure()
+        ambient_pressure = WeatherAPI().get_ambient_pressure_hpa()
+        return abs_pressure - ambient_pressure
+
+    def _get_temperature_c(self):
+        """Read temperature from BMP280 sensor."""
+        return self.bmp280.get_temperature()
 
     def get_status_text(self, value):
         """Return appropriate status text for given value."""
@@ -195,9 +211,21 @@ class DepthSensor:
             time.sleep(1)
 
 
-def hpa_to_depth(hpa):
+def hpa_to_depth(hpa, temp_c):
     """Convert pressure (hPa) to depth in mm."""
-    return round(hp * HPA_TO_DEPTH_M + HPA_TO_DEPTH_C)
+
+    # TODO: apply temperature correction
+
+    depth_raw = round(hpa * HPA_TO_DEPTH_M + HPA_TO_DEPTH_C)
+    depth_adjusted = get_temp_adjusted_depth(depth_raw, temp_c)
+
+    return depth_adjusted
+
+
+def get_temp_adjusted_depth(depth, temp_c):
+    """Adjust depth estimate based on temperature."""
+    delta = temp_c - DEPTH_ADJUST_FROM_C
+    return depth * delta * DEPTH_ADJUST_PER_C
 
 
 def hpa_to_volume(hpa):

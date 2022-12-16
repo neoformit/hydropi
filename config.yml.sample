@@ -3,21 +3,19 @@
 DEVMODE: True                # Spoof hardware interfaces on dev machine
 DEBUG: True                 # Extra logging output
 CONFIG_DIR: '~/.hydropi'
-DAEMON_HTTP_PORT: 2021
 
-# Keys
+# Credentials
 # ------------------------------------------------------------------------------
 
 WEATHER_API_KEY: xxxxx  # https://weatherapi.com/
-
-# Notifications
-# ------------------------------------------------------------------------------
 
 TELEGRAM_API_TOKEN: XXX
 TELEGRAM_CHAT_ID: XXX
 
 # Hardware IO (BCM)
 #-------------------------------------------------------------------------------
+
+# I2c interface reads from GPIO 2,3
 
 # Inputs
 PIN_TEMPERATURE_PIPE: 2
