@@ -9,6 +9,7 @@ making it seem shallower than it is. The hottest temperature will then give the
 
 """
 
+import os
 import time
 import math
 import random
@@ -23,7 +24,7 @@ except ModuleNotFoundError:
     print("WARNING: Can't import Pi packages - assume developer mode")
     io = None
 
-from hydropi.config import config
+from hydropi.config import config, STATUS
 from hydropi.process.errors import catchme
 from hydropi.interfaces.utils import WeatherAPI
 from .pressure import PressureSensor
@@ -92,7 +93,7 @@ class DepthSensor:
             return
         # Initialise the BMP280
         self.bus = SMBus(1)
-        self.bmp280 = BMP280(i2c_dev=bus)
+        self.bmp280 = BMP280(i2c_dev=self.bus)
 
     @catchme
     def read(self, n=None, pressure=False, include_pressure_tank=True,
@@ -113,16 +114,20 @@ class DepthSensor:
             hpa = self._read_median(n)
         else:
             hpa = self._get_pressure_hpa()
-            temp_c = self._get_temperature_c()
-            logger.info(f"Tank temperature: {temp_c:.1f}C")
+
+        logger.debug(f"Read depth barometric pressure: {hpa:.2f} hPa")
 
         if pressure:
             return hpa
-        elif depth:
+
+        temp_c = self._get_temperature_c()
+        logger.info(f"Tank temperature: {temp_c:.1f}C")
+
+        if depth:
             r = round(hpa_to_depth(hpa, temp_c), None)
             logger.info(f"{type(self).__name__} READ: DEPTH {r}mm (n={n})")
         else:
-            vol = hpa_to_volume(td)
+            vol = hpa_to_volume(hpa, temp_c)
             logger.debug(
                 f"{type(self).__name__} READ: tank volume excluding pressure"
                 f" {round(vol, self.DECIMAL_POINTS)} litres")
@@ -217,7 +222,9 @@ def hpa_to_depth(hpa, temp_c):
     # TODO: apply temperature correction
 
     depth_raw = round(hpa * HPA_TO_DEPTH_M + HPA_TO_DEPTH_C)
+    logger.debug(f"Raw depth from barometric pressure: {depth_raw:.2f}mm")
     depth_adjusted = get_temp_adjusted_depth(depth_raw, temp_c)
+    logger.debug(f"Raw depth from barometric pressure: {depth_raw:.2f}mm")
 
     return depth_adjusted
 
@@ -225,12 +232,13 @@ def hpa_to_depth(hpa, temp_c):
 def get_temp_adjusted_depth(depth, temp_c):
     """Adjust depth estimate based on temperature."""
     delta = temp_c - DEPTH_ADJUST_FROM_C
-    return depth * delta * DEPTH_ADJUST_PER_C
+    factor = 1  # delta * DEPTH_ADJUST_PER_C
+    return depth * factor
 
 
-def hpa_to_volume(hpa):
+def hpa_to_volume(hpa, temp_c):
     """Estimate volume (L) for given pressure (hPa) in a 60L bin."""
-    mm = hpa_to_depth(hpa)
+    mm = hpa_to_depth(hpa, temp_c)
     return depth_to_volume(mm)
 
 

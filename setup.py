@@ -20,6 +20,7 @@ setuptools.setup(
         'hydropi.interfaces',
         'hydropi.interfaces.sensors',
         'hydropi.interfaces.controllers',
+        'hydropi.interfaces.utils',
         'hydropi.notifications',
         'hydropi.process',
         'hydropi.process.check',

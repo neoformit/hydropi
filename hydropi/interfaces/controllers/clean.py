@@ -4,9 +4,12 @@ Should run at startup.
 """
 
 import os
+import logging
 from hydropi.config import config
 
 DEED_ROOT = os.path.join(config.TEMP_DIR, 'deeds')
+
+logger = logging.getLogger('hydropi')
 
 
 def deeds():
