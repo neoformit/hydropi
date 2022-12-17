@@ -15,12 +15,27 @@ TELEGRAM_CHAT_ID: XXX
 # Hardware IO (BCM)
 #-------------------------------------------------------------------------------
 
-# I2c interface reads from GPIO 2,3
+# GPIO pin mapping
+# 1  -> SPARE_RELAY_PIN_B
+# 2  -> I2C pressure/depth sensor (SDA)
+# 3  -> I2C pressure/depth sensor (SCL)
+# 4  -> PIN_TEMPERATURE_PIPE
+# 7  -> PIN_WATER_VALVE (broken relay channel)
+# 14 -> PIN_PRESSURE_PUMP
+# 15 -> PIN_MIST_VALVE
+# 18 -> PIN_PH_DOWN_PUMP
+# 19 -> PIN_MISO
+# 20 -> PIN_MOSI
+# 21 -> PIN_CLK
+# 23 -> PIN_NUTRIENT_PUMP
+# 24 -> SPARE_RELAY_PIN_A
+# 25 -> PIN_MIX_PUMP
+# 26 -> PIN_CS
 
 # Inputs
-PIN_TEMPERATURE_PIPE: 2
-PIN_DEPTH_TRIG: 4
-PIN_DEPTH_ECHO: 5
+PIN_DEPTH_SDA: 2
+PIN_DEPTH_SCL: 3
+PIN_TEMPERATURE_PIPE: 4
 
 # MCP3008 ADC chip
 PIN_MISO: 19  # Din
