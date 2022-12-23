@@ -15,6 +15,7 @@ from hydropi.process import check
 from hydropi.process.errors import ErrorWatcher
 from hydropi.interfaces import PipeTemperatureSensor
 from hydropi.interfaces import MixPumpController
+from hydropi.notifications import telegram
 from .pause import paused
 
 logger = logging.getLogger('hydropi')
@@ -28,7 +29,9 @@ def sweep():
         try:
             while True:
                 if paused():
-                    logger.info("MAINTENANCE PAUSED: Skipping sweep round")
+                    msg = "MAINTENANCE PAUSED: Skipping sweep round"
+                    logger.info(msg)
+                    telegram.notify(msg)
                     sleep(60 * config.SWEEP_CYCLE_MINUTES)
                 else:
                     sweep_and_restore()
