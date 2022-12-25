@@ -111,11 +111,18 @@ class DepthSensor:
         """
         n = n or self.DEFAULT_MEDIAN_SAMPLES
         if n > 1:
-            hpa = self._read_median(n)
+            abs_hpa = self._read_median(n)
         else:
-            hpa = self._get_pressure_hpa()
+            abs_hpa = self._get_pressure_hpa()
 
-        logger.debug(f"Read depth barometric pressure: {hpa:.2f} hPa")
+        ambient_hpa = WeatherAPI().get_ambient_pressure_hpa()
+        if not ambient_hpa:
+            logger.warning('No data returned from WeatherAPI')
+            return
+        logger.info(f"WeatherAPI current: {ambient_hpa} hPa")
+        hpa = abs_hpa - ambient_hpa
+
+        logger.debug(f"Read depth relative pressure: {hpa:.2f} hPa")
 
         if pressure:
             return hpa
@@ -142,15 +149,16 @@ class DepthSensor:
         """Return median echo time from <n> samples."""
         readings = []
         for i in range(n):
-            readings.append(self.read(n=1, pressure=True))
+            r = self.read(n=1, pressure=True)
+            if r is not None:
+                readings.append(r)
             time.sleep(self.MEDIAN_INTERVAL_SECONDS)
+
         return statistics.median(readings)
 
     def _get_pressure_hpa(self):
         """Read pressure from BMP280 and convert to relative pressure."""
-        abs_pressure = self.bmp280.get_pressure()
-        ambient_pressure = WeatherAPI().get_ambient_pressure_hpa()
-        return abs_pressure - ambient_pressure
+        return self.bmp280.get_pressure()
 
     def _get_temperature_c(self):
         """Read temperature from BMP280 sensor."""

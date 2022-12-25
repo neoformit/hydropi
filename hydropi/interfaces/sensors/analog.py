@@ -161,7 +161,9 @@ class AnalogInterface:
         """Return median channel reading from <n> samples."""
         readings = []
         for i in range(n):
-            readings.append(self.get_value(as_volts=True))
+            r = self.get_value(as_volts=True)
+            if r:
+                readings.append(r)
             time.sleep(self.MEDIAN_INTERVAL_SECONDS)
         volts = statistics.median(readings)
         logger.debug(f"Median volts (n={n}): {volts}")

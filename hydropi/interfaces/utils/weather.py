@@ -23,6 +23,5 @@ class WeatherAPI:
         })
         try:
             return r.json()['current']['pressure_mb']
-        except KeyError:
-            raise KeyError(
-                'Key "pressure_mb" not found in weather API response')
+        except Exception as exc:
+            logger.error(f"Error fetching data from WeatherAPI: {exc}")
