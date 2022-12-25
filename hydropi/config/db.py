@@ -195,7 +195,7 @@ class DB:
             )
             VALUES ('{key}', {value}, '{value_type}')
             """
-        )in
+        )
 
     def sql_get_key(self, key):
         """Generate SQL to fetch value for config key."""
