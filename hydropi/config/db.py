@@ -240,11 +240,18 @@ class DB:
 
     def sql_write_datalog(self, data):
         """Generate SQL to write row on datalog table."""
+        def get_sql_str(field):
+            """Return field (name, object) as SQL string."""
+            if field[0] == 'datetime':
+                return f"'{x[1]}'"
+            if x[1] is None:
+                return "NULL"
+            return x[1]
+
         fields = data.items()
         columns = [x[0] for x in fields]
         values = [
-            x[1] if x[0] != 'datetime' else f"'{x[1]}'"
-            for x in fields
+            get_sql_str(f) for f in fields
         ]
 
         return (
