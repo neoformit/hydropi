@@ -123,7 +123,7 @@ class DepthSensor:
         logger.debug(f"WeatherAPI current pressure: {ambient_hpa} hPa")
         hpa = abs_hpa - ambient_hpa
 
-        logger.debug(f"Read depth relative pressure: {hpa:.2f} hPa")debug
+        logger.debug(f"Read depth relative pressure: {hpa:.2f} hPa")
 
         if pressure:
             return hpa
