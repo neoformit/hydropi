@@ -18,6 +18,9 @@ def level():
     ps = PressureSensor()
     stat = ps.read(n=5)
 
+    if stat is None:
+        return
+
     if stat < ps.RANGE_LOWER:
         if stat < ps.DANGER_LOWER:
             message = (
