@@ -195,7 +195,7 @@ class DB:
             )
             VALUES ('{key}', {value}, '{value_type}')
             """
-        )
+        )in
 
     def sql_get_key(self, key):
         """Generate SQL to fetch value for config key."""
@@ -242,11 +242,12 @@ class DB:
         """Generate SQL to write row on datalog table."""
         def get_sql_str(field):
             """Return field (name, object) as SQL string."""
-            if field[0] == 'datetime':
-                return f"'{x[1]}'"
-            if x[1] is None:
+            col, val = field
+            if col == 'datetime':
+                return f"'{val}'"
+            if val is None:
                 return "NULL"
-            return x[1]
+            return val
 
         fields = data.items()
         columns = [x[0] for x in fields]
