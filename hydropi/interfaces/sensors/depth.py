@@ -115,14 +115,15 @@ class DepthSensor:
         else:
             abs_hpa = self._get_pressure_hpa()
 
+        logger.debug(f"Read depth absolute pressure: {ambient_hpa} hPa")
         ambient_hpa = WeatherAPI().get_ambient_pressure_hpa()
         if not ambient_hpa:
             logger.warning('No data returned from WeatherAPI')
             return
-        logger.info(f"WeatherAPI current: {ambient_hpa} hPa")
+        logger.debug(f"WeatherAPI current pressure: {ambient_hpa} hPa")
         hpa = abs_hpa - ambient_hpa
 
-        logger.debug(f"Read depth relative pressure: {hpa:.2f} hPa")
+        logger.debug(f"Read depth relative pressure: {hpa:.2f} hPa")debug
 
         if pressure:
             return hpa
