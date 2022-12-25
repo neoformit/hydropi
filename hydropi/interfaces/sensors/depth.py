@@ -96,7 +96,7 @@ class DepthSensor:
         self.bmp280 = BMP280(i2c_dev=self.bus)
 
     @catchme
-    def read(self, n=None, pressure=False, include_pressure_tank=True,
+    def read(self, n=None, abs_pressure=False, include_pressure_tank=True,
              depth=False):
         """Return current volume in litres.
 
@@ -116,6 +116,9 @@ class DepthSensor:
             abs_hpa = self._get_pressure_hpa()
 
         logger.debug(f"Read depth absolute pressure: {abs_hpa} hPa")
+        if abs_pressure:
+            return hpa
+
         ambient_hpa = WeatherAPI().get_ambient_pressure_hpa()
         if not ambient_hpa:
             logger.warning('No data returned from WeatherAPI')
@@ -124,9 +127,6 @@ class DepthSensor:
         hpa = abs_hpa - ambient_hpa
 
         logger.debug(f"Read depth relative pressure: {hpa:.2f} hPa")
-
-        if pressure:
-            return hpa
 
         temp_c = self._get_temperature_c()
         logger.info(f"Tank temperature: {temp_c:.1f}C")
@@ -150,7 +150,7 @@ class DepthSensor:
         """Return median echo time from <n> samples."""
         readings = []
         for i in range(n):
-            r = self.read(n=1, pressure=True)
+            r = self.read(n=1, abs_pressure=True)
             if r is not None:
                 readings.append(r)
             time.sleep(self.MEDIAN_INTERVAL_SECONDS)
